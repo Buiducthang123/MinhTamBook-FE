@@ -17,9 +17,9 @@
                 <div class="text-center text-2xl font-bold mb-6">Đăng ký tài khoản doanh nghiệp</div>
                 <a-form :model="registerCompanyForm" ref="formRef" @finish="handleSubmit" layout="vertical" class="">
                      <div class="grid grid-cols-1 md:grid-cols-2  gap-x-4" :noStyle="true">
-                        <a-form-item label="Họ và tên" name="full_name"
+                        <a-form-item label="Họ và tên" name="fullName"
                             :rules="[{ required: true, message: 'Vui lòng nhập họ và tên!' }]">
-                            <a-input placeholder="Nhập họ và tên" v-model:value="registerCompanyForm.full_name" />
+                            <a-input placeholder="Nhập họ và tên" v-model:value="registerCompanyForm.fullName" />
                         </a-form-item>
                         <a-form-item label="Email" name="email"
                             :rules="[{ required: true, message: 'Vui lòng nhập email!' }]">
@@ -35,43 +35,43 @@
                             <a-input-password placeholder="Xác nhận mật khẩu"
                                 v-model:value="registerCompanyForm.password_confirmation" />
                         </a-form-item>
-                        <a-form-item label="Tên công ty" name="company_name"
+                        <a-form-item label="Tên công ty" name="companyName"
                             :rules="[{ required: true, message: 'Vui lòng nhập tên công ty!' }]">
-                            <a-input placeholder="Nhập tên công ty" v-model:value="registerCompanyForm.company_name" />
+                            <a-input placeholder="Nhập tên công ty" v-model:value="registerCompanyForm.companyName" />
                         </a-form-item>
-                        <a-form-item label="Địa chỉ công ty" name="company_address"
+                        <a-form-item label="Địa chỉ công ty" name="companyAddress"
                             :rules="[{ required: true, message: 'Vui lòng nhập địa chỉ công ty!' }]">
                             <a-input placeholder="Nhập địa chỉ công ty"
-                                v-model:value="registerCompanyForm.company_address" />
+                                v-model:value="registerCompanyForm.companyAddress" />
                         </a-form-item>
-                        <a-form-item label="Số điện thoại công ty" name="company_phone_number"
+                        <a-form-item label="Số điện thoại công ty" name="companyPhoneNumber"
                             :rules="[{ required: true, message: 'Vui lòng nhập số điện thoại công ty!' }]">
                             <a-input placeholder="Nhập số điện thoại công ty"
-                                v-model:value="registerCompanyForm.company_phone_number" />
+                                v-model:value="registerCompanyForm.companyPhoneNumber" />
                         </a-form-item>
-                        <a-form-item label="Mã số thuế công ty" name="company_tax_code"
+                        <a-form-item label="Mã số thuế công ty" name="companyTaxCode"
                             :rules="[{ required: true, message: 'Vui lòng nhập mã số thuế công ty!' }]">
                             <a-input placeholder="Nhập mã số thuế công ty"
-                                v-model:value="registerCompanyForm.company_tax_code" />
+                                v-model:value="registerCompanyForm.companyTaxCode" />
                         </a-form-item>
-                        <a-form-item label="Tên người liên hệ" name="contact_person_name"
+                        <a-form-item label="Tên người liên hệ" name="contactPersonName"
                             :rules="[{ required: true, message: 'Vui lòng nhập tên người liên hệ!' }]">
                             <a-input placeholder="Nhập tên người liên hệ"
-                                v-model:value="registerCompanyForm.contact_person_name" />
+                                v-model:value="registerCompanyForm.contactPersonName" />
                         </a-form-item>
-                        <a-form-item label="Chức vụ người liên hệ" name="contact_person_position"
+                        <a-form-item label="Chức vụ người liên hệ" name="contactPersonPosition"
                             :rules="[{ required: true, message: 'Vui lòng nhập chức vụ người liên hệ!' }]">
                             <a-input placeholder="Nhập chức vụ người liên hệ"
-                                v-model:value="registerCompanyForm.contact_person_position" />
+                                v-model:value="registerCompanyForm.contactPersonPosition" />
                         </a-form-item>
-                        <a-form-item label="CMND/CCCD người đại diện" name="representative_id_card"
+                        <a-form-item label="CMND/CCCD người đại diện" name="representativeIdCard"
                             :rules="[{ required: true, message: 'Vui lòng nhập CMND/CCCD người đại diện!' }]">
                             <a-input placeholder="Nhập CMND/CCCD người đại diện"
-                                v-model:value="registerCompanyForm.representative_id_card" />
+                                v-model:value="registerCompanyForm.representativeIdCard" />
                         </a-form-item>
-                        <a-form-item label="Ngày cấp CMND/CCCD" name="representative_id_card_date"
+                        <a-form-item label="Ngày cấp CMND/CCCD" name="representativeIdCardDate"
                             :rules="[{ required: true, message: 'Vui lòng nhập ngày cấp CMND/CCCD!' }]">
-                            <a-date-picker v-model:value="registerCompanyForm.representative_id_card_date" value-format="DD-MM-YYYY" />
+                            <a-date-picker v-model:value="registerCompanyForm.representativeIdCardDate" value-format="DD-MM-YYYY" />
                         </a-form-item>
                     </div>
                     <a-form-item>
@@ -99,34 +99,34 @@ useSeoMeta({
 });
 
 interface IregisterCompanyForm {
-    full_name: string;
+    fullName: string;
     email: string;
     password: string;
     password_confirmation: string;
-    company_name: string;
-    company_address: string;
-    company_phone_number: string;
-    company_tax_code: string;
-    contact_person_name: string;
-    contact_person_position: string;
-    representative_id_card: string;
-    representative_id_card_date: string;
+    companyName: string;
+    companyAddress: string;
+    companyPhoneNumber: string;
+    companyTaxCode: string;
+    contactPersonName: string;
+    contactPersonPosition: string;
+    representativeIdCard: string;
+    representativeIdCardDate: string;
 }
 
 const formRef = ref();
 const registerCompanyForm = reactive<IregisterCompanyForm>({
-    full_name: '',
+    fullName: '',
     email: '',
     password: '',
     password_confirmation: '',
-    company_name: '',
-    company_address: '',
-    company_phone_number: '',
-    company_tax_code: '',
-    contact_person_name: '',
-    contact_person_position: '',
-    representative_id_card: '',
-    representative_id_card_date: '',
+    companyName: '',
+    companyAddress: '',
+    companyPhoneNumber: '',
+    companyTaxCode: '',
+    contactPersonName: '',
+    contactPersonPosition: '',
+    representativeIdCard: '',
+    representativeIdCardDate: '',
 });
 
 const handleSubmit = async() => {

@@ -8,9 +8,9 @@
                     <h6>Đăng ký tài khoản</h6>
                 </div>
                 <a-form :model="registerForm" layout="vertical" ref="formRef" @finish="handleOk">
-                    <a-form-item class="mb-4" label="Họ và tên" name="full_name"
+                    <a-form-item class="mb-4" label="Họ và tên" name="fullName"
                         :rules="[{ required: true, message: 'Vui lòng nhập họ tên!' }]">
-                        <a-input placeholder="Nhập họ và tên" v-model:value="registerForm.full_name" />
+                        <a-input placeholder="Nhập họ và tên" v-model:value="registerForm.fullName" />
                     </a-form-item>
 
                     <a-form-item class="mb-4" label="Email" name="email"
@@ -58,7 +58,7 @@ const authModal = useAuthModal();
 const { isRegisterModalOpen } = authModal;
 
 interface registerFormData {
-    full_name: string;
+    fullName: string;
     email: string;
     password: string;
     // status: number;
@@ -66,7 +66,7 @@ interface registerFormData {
 }
 
 const registerForm = ref<registerFormData>({
-    full_name: '',
+    fullName: '',
     email: '',
     password: '',
     password_confirmation: '',
