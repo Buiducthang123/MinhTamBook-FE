@@ -17,6 +17,7 @@ export default defineNuxtConfig({
     port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
   },
   runtimeConfig: {
+    imgbb_api_key:process.env.IMGBB_API_KEY,
     public:{
       apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:8000/api',
     }

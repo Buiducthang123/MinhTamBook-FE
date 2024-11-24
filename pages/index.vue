@@ -5,8 +5,28 @@
 </template>
 
 <script setup lang="ts">
-onMounted(() => {
-    console.log('The component is mounted')
+onMounted(async() => {
+const authStore = useAuthStore();
+const { setUser } = authStore;
+const accessToken = useCookie('access_token');
+if (accessToken) {
+    await $fetch('user-me', {
+        method: 'GET',
+        baseURL: useRuntimeConfig().public.apiBaseUrl,
+        headers: {
+            Authorization: `Bearer ${accessToken.value}`
+        },
+        onResponse: ({ response }) => {
+            if (response.ok) {
+                setUser(response._data);
+            }
+            else {
+                accessToken.value = null
+            }
+        }
+    })
+
+}
 })
 
 useHead({

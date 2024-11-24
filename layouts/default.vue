@@ -23,19 +23,44 @@
             </div>
             <div class="h-fit ">
                 <div class="flex items-center justify-end">
-                    <a-button type="ghost" size="large"
-                        class="flex items-center gap-2 transition-all hover:bg-[#f0f0f0]"
-                        @click="openLoginModal"
-                        >
+                    <a-button v-if="user==null" type="ghost" size="large"
+                        class="flex items-center gap-2 transition-all hover:bg-[#f0f0f0]" @click="openLoginModal">
                         <Icon class="text-xl " name="tabler:home" />
                         Đăng nhập
                     </a-button>
 
-                    <a-button type="ghost" size="large"
-                        class="flex items-center gap-2 transition-all hover:bg-[#f0f0f0]">
+                    <a-button v-else type="ghost" size="large"
+                        class="flex items-center gap-2 transition-all hover:bg-[#f0f0f0]" @click="navigateTo('/')">
+                        <Icon class="text-xl " name="tabler:home" />
+                        Trang chủ
+                    </a-button>
+
+                    <a-button v-if="user == null" type="ghost" size="large"
+                        class="flex items-center gap-2 transition-all hover:bg-[#f0f0f0]" @click="openLoginModal">
                         <Icon class=" text-xl " name="mdi:emoticon-happy-outline" />
                         Tài khoản
                     </a-button>
+
+                    <a-dropdown v-else>
+                        <template #overlay>
+                            <a-menu class="space-y-1">
+                                <a-menu-item key="1" @click="navigateTo('/customer')">
+                                    Thông tin tài khoản
+                                </a-menu-item>
+                                <a-menu-item key="2">
+                                    Đơn hàng của tôi
+                                </a-menu-item>
+                                <a-menu-item key="3">
+                                    Đăng xuất
+                                </a-menu-item>
+                            </a-menu>
+                        </template>
+                        <a-button type="ghost" size="large"
+                            class="flex items-center gap-2 transition-all hover:bg-[#f0f0f0]">
+                            <Icon class=" text-xl " name="mdi:emoticon-happy-outline" />
+                            Tài khoản
+                        </a-button>
+                    </a-dropdown>
 
                     <a-badge count="5" class="border-l-2 ml-2 pl-4 border-black cursor-pointer">
                         <Icon class="text-xl" name="tdesign:cart" />
@@ -44,7 +69,7 @@
                 <div class="flex items-center gap-2 mt-2 text-sm">
                     <Icon class="text-xl cursor-pointer" name="material-symbols:location-on-outline" />
                     <span>Giao đến: </span>
-                    <ins class="font-medium">Q.Hoàn Kiếm, P.Hàng Trống, Hà Nội</ins>
+                    <ins class="font-medium">Chưa xác định</ins>
                 </div>
             </div>
         </div>
@@ -83,11 +108,21 @@
 </template>
 
 <script setup lang="ts">
+import type { MenuProps } from 'ant-design-vue';
+
 const search = ref<string>('');
 
 const authModal = useAuthModal();
 
-const { isLoginModalOpen,isRegisterModalOpen, openLoginModal } = authModal;
+const { isLoginModalOpen, isRegisterModalOpen, openLoginModal } = authModal;
+
+const authStore = useAuthStore();
+
+const user = computed(() => authStore.user);
+
+const handleMenuClick: MenuProps['onClick'] = e => {
+  console.log('click', e);
+};
 
 </script>
 

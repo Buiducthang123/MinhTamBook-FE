@@ -32,13 +32,25 @@
     </a-modal>
 </template>
 <script lang="ts" setup>
+import type { IUser } from '~/interfaces/user';
+
+
 const formRef = ref();
 const authModal = useAuthModal();
 const { isLoginModalOpen, closeLoginModal, openRegisterModal } = authModal;
 
+const authStore = useAuthStore();
+const { setUser, setAccessToken } = authStore;
+
 interface LoginFormData {
     email: string;
     password: string;
+}
+
+interface LoginResponse {
+    token: string;
+    user: IUser;
+    message: string;
 }
 
 const loginForm = reactive<LoginFormData>({
@@ -54,13 +66,15 @@ const handleOpenRegisterModal = () => {
 const handleLogin = async () => {
     try {
         await formRef.value.validate();
-        await $fetch('login', {
+        await $fetch<LoginResponse>('login', {
             method: 'POST',
             body: loginForm,
             baseURL: useRuntimeConfig().public.apiBaseUrl,
             onResponse: ({ response }) => {
                 if (response.ok) {
                     message.success('Đăng nhập thành công');
+                    setUser(response._data.user);
+                    setAccessToken(response._data.token);
                     closeLoginModal();
                 }
                 else {

@@ -21,6 +21,9 @@ definePageMeta({
 const route = useRoute();
 const isShowLoading = ref(true);
 const isShowError = ref(false);
+const authStore = useAuthStore();
+const { setAccessToken, setUser } = authStore;
+
 onMounted(async () => {
   await $fetch('user-me', {
     method: 'GET',
@@ -31,6 +34,8 @@ onMounted(async () => {
     onResponse: ({ response }) => {
       if (response.ok) {
         isShowLoading.value = false;
+        setAccessToken(route.query.token as string);
+        window.opener.location.reload(); // load lại trang cha
         window.close();
       }
       else {
