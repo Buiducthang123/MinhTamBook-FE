@@ -23,7 +23,7 @@
             </div>
             <div class="h-fit ">
                 <div class="flex items-center justify-end">
-                    <a-button v-if="user==null" type="ghost" size="large"
+                    <a-button v-if="user == null" type="ghost" size="large"
                         class="flex items-center gap-2 transition-all hover:bg-[#f0f0f0]" @click="openLoginModal">
                         <Icon class="text-xl " name="tabler:home" />
                         Đăng nhập
@@ -69,7 +69,10 @@
                 <div class="flex items-center gap-2 mt-2 text-sm">
                     <Icon class="text-xl cursor-pointer" name="material-symbols:location-on-outline" />
                     <span>Giao đến: </span>
-                    <ins class="font-medium">Chưa xác định</ins>
+                    <ins v-if="addressDefault" class="font-medium">
+                        {{ addressDefault.ward.WardName }} , {{ addressDefault.district.DistrictName }}, {{ addressDefault.province.ProvinceName }}
+                    </ins>
+                    <ins v-else class="font-medium">Chưa xác định</ins>
                 </div>
             </div>
         </div>
@@ -109,6 +112,7 @@
 
 <script setup lang="ts">
 import type { MenuProps } from 'ant-design-vue';
+import type { IShippingAddress } from '~/interfaces/shipping_address';
 
 const search = ref<string>('');
 
@@ -121,8 +125,15 @@ const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 
 const handleMenuClick: MenuProps['onClick'] = e => {
-  console.log('click', e);
+    console.log('click', e);
 };
+
+const addressDefault = computed(() => {
+    if (!user.value || !user.value.shipping_addresses) {
+        return null;
+    }
+    return user.value.shipping_addresses.find((address: IShippingAddress) => address.is_default);
+});
 
 </script>
 

@@ -1,3 +1,5 @@
+import type { IShippingAddress } from "./shipping_address";
+
 export interface IUser {
     id: number;
     role_id: number;
@@ -15,6 +17,7 @@ export interface IUser {
     representative_id_card?: string;
     representative_id_card_date?: Date;
     contact_person_position?: string;
+    shipping_addresses?: IShippingAddress[];
     created_at: Date;
     updated_at: Date;
 }

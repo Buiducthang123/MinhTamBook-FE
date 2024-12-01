@@ -8,19 +8,41 @@ export const useAuthStore = defineStore('auth',()=>{
       watch: true
   })
 
-  const setUser = (newUser: IUser) => {
+  const setUser = (newUser: IUser|undefined) => {
     user.value = newUser
   }
 
-  const setAccessToken = (newAccessToken: string) => {
+  const setAccessToken = (newAccessToken: string|null) => {
     accessToken.value = newAccessToken
   }
 
+  const getUser = async () => {
+    if (!accessToken.value) {
+      return
+    }
+    await $fetch<IUser>('/user-me', {
+      headers: {
+        Authorization: `Bearer ${accessToken.value}`
+      },
+      baseURL: useRuntimeConfig().public.apiBaseUrl,
+      onResponse:({response})=>{
+        if(response.ok){
+          setUser(response._data)
+          navigateTo('/customer/address')
+        }
+        else{
+          setAccessToken(null)
+          setUser(undefined)
+          navigateTo('/login')
+      }}
+    })
+  }
 
   return { 
     user,
     accessToken,
     setUser,
     setAccessToken,
+    getUser
   }
 })

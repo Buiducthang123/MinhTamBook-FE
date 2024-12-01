@@ -18,6 +18,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     imgbb_api_key:process.env.IMGBB_API_KEY,
+    ghn_token: process.env.GHN_TOKEN_API,
     public:{
       apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:8000/api',
     }
