@@ -1,10 +1,9 @@
 <template>
-     <NuxtLayout>
-        <NuxtPage/>
-    </NuxtLayout>
+    <NuxtPage/>    
 </template>
 
 <script setup lang="ts">
+
 onMounted(async() => {
 const authStore = useAuthStore();
 const { setUser } = authStore;

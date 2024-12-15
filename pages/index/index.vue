@@ -1,42 +1,77 @@
 <template>
-    <section class="">
-        <div class="py-5">
-            <a-breadcrumb separator=">" class="text-base font-medium">
-                <a-breadcrumb-item>Trang chủ</a-breadcrumb-item>
-                <a-breadcrumb-item href="">đường dẫn 1</a-breadcrumb-item>
-                <a-breadcrumb-item href="">đường dẫn 2</a-breadcrumb-item>
-                <a-breadcrumb-item>An Application</a-breadcrumb-item>
-            </a-breadcrumb>
-        </div>
-        <div class="grid grid-cols-12 gap-10">
-            <section class="col-span-2">
-                <Menu />
-            </section>
-            <section class="col-span-10">
-                <div class="p-6 bg-white  rounded-lg">
-                    <span class="text-3xl font-semibold">Nhà sách TiKi</span>
-                </div>
-
+    <NuxtLayout name="default">
+        <NuxtLayout name="home">
+            <section class="">
                 <section>
-                    <PromotionalSlider class="mt-6" />
+                    <PromotionalSlider/>
                 </section>
-
+        
                 <section class="mt-10 ">
                     <ExploreCategory />
                 </section>
-
+        
                 <section class="mt-10">
-                    <Filter/>
+                    <Filter :filter="bookQuery" />
+                </section>
+                <hr>
+        
+                <section class=" bg-white p-6 mt-4">
+                    <div class="grid grid-cols-12 gap-x-4 gap-y-8">
+                        <BookCard v-for="book in books?.data" :key="book.id" :book="book" class="col-span-3"/>
+                    </div>
+                    <div class="mt-10 text-end">
+                        <a-pagination v-model:current="bookQuery.page" :total="books?.total" show-less-items />
+                    </div>
                 </section>
             </section>
-            
-        </div>
-    </section>
-
+        </NuxtLayout>
+    </NuxtLayout>
 </template>
 
 <script setup lang="ts">
+import type { IBook } from '~/interfaces/book';
+import type { IResponsePagination } from '~/interfaces/response';
+
+definePageMeta({
+  layout: 'default'
+});
+
+const route = useRoute();
+
+const categoryStore = useCategoryStore();
+const categories = computed(() => categoryStore.categories);
+const currentCategory = computed(() => {
+    return categories.value?.find(cate => cate.slug === route.params.slug || cate.id.toString() === route.params.slug);
+});
+
+const bookQuery = reactive({
+    'with[]': ['authors', 'publisher', 'category'],
+    page:1,
+    sort: 'asc',
+    rating: 'all',
+    paginate: 12,
+    priceFrom: 0,
+    priceTo: 10000000, 
+});
+
+const apiUrl = route.params.slug ? `/books/category/${currentCategory.value?.id}` : '/books';
+
+const { data:books } = await useFetch<IResponsePagination<IBook>>(apiUrl, {
+    method: 'GET',
+    baseURL:useRuntimeConfig().public.apiBaseUrl,
+    onResponse: ({response}) => {
+        if (response.ok) {
+           console.log(response._data);
+        }
+        else {
+            console.log(response);
+        }
+    },
+    query:bookQuery
+});
 
 </script>
 
-<style scoped></style>
+<style scoped>
+
+</style>

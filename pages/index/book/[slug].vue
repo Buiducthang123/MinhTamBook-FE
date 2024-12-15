@@ -1,0 +1,280 @@
+<template>
+    <div class="min-h-screen pt-6">
+
+        <!--ĐƯờng dẫn-->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item cursor-pointer">
+                    <a @click="navigateTo('/')">Trang chủ</a>
+                </li>
+                <li v-for="(breadcrumb, index) in breadcrumbs" :key="breadcrumb.id" class="breadcrumb-item cursor-pointer">
+                    <a @click="navigateTo('/category/' + (breadcrumb.slug ? breadcrumb.slug : breadcrumb.id))">{{
+                        breadcrumb.name }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ book?.title }}</li>
+            </ol>
+        </nav>
+
+        <div class="p-4 bg-white grid grid-cols-12 gap-10">
+            <div class="col-span-5">
+                <a-carousel arrows dots-class="slick-dots slick-thumb">
+                    <template #customPaging="{ i }">
+                        <a>
+                            <img :src="allImages[i]" />
+                        </a>
+                    </template>
+                    <div v-for="(item, index) in allImages" :key="index">
+                        <img :src="allImages[index]" />
+                    </div>
+                </a-carousel>
+
+            </div>
+            <div class="col-span-7">
+                <h6 class="text-xl font-bold">{{ book?.title }}</h6>
+                <div class="flex gap-3 mt-3">
+                    <div class="flex">
+                        <ins class="text-base font-medium mr-2">4.8</ins>
+                        <span v-for="star in 5" :key="star" class="text-xl">
+                            <Icon name="i-material-symbols-star" v-if="star <= 4.8" class="text-yellow-500" />
+                            <Icon name="i-material-symbols-star-outline" v-else class="text-gray-400" />
+                        </span>
+                    </div>
+                    <span>|</span>
+                    <div class="flex items-center">
+                        <ins class="text-base font-medium mr-2">5000</ins>
+                        <span> Đánh giá</span>
+                    </div>
+                </div>
+                <div class="p-4 bg-[#f1f1f1] mt-4 flex gap-4 items-center">
+                    <span class="text-red-400 text-2xl">{{ book?.discount ? formatCurrency(book.price * (1 -
+                        book.discount / 100)) :
+                        'N/A' }}</span>
+                    <del class="text-gray-500 text-base">{{ formatCurrency(book?.price) }}</del>
+                    <a-tag color="red">{{ book?.discount }} %</a-tag>
+                </div>
+
+                <!--Chọn số lượng-->
+                <div class="flex items-center gap-4 mt-6">
+                    <span>Số lượng:</span>
+                    <div class="flex items-center gap-2">
+                        <a-button @click="quantity > 1 ? quantity-- : null">-</a-button>
+                        <a-input-number v-model:value="quantity" min="1" max="100" />
+                        <a-button @click="quantity < 100 ? quantity++ : null">+</a-button>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-4">
+                    <a-button type="primary" class="rounded-0" size="large">Mua ngay</a-button>
+                    <a-button size="large" class="rounded-0" @click="handleAddToCart">Thêm sản phẩm vào giỏ hàng</a-button>
+                </div>
+            </div>
+        </div>
+
+        <!--Sản phẩm tương tự-->
+
+        <div class="bg-white mt-6 p-10">
+            <div v-if="booksInCategory?.data && booksInCategory.data.length > 0" class="flex justify-between">
+                <h6 class="text-xl font-medium mb-6">Các sản phẩm tương tự</h6>
+                <span class="text-red-500 cursor-pointer">Tất cả sản phẩm ></span>
+            </div>
+            <div class="grid grid-cols-12 gap-4">
+                <BookCard v-for="book in booksInCategory?.data" :key="book.id" :book="book" class="col-span-3" />
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <h6 class="text-xl font-medium mb-4">Thông tin sản phẩm {{ book?.title }}</h6>
+            <a-tabs>
+                <a-tab-pane key="1" tab="Mô tả">
+                    <div class="p-4 bg-white mt-4" v-html="book?.description"></div>
+                </a-tab-pane>
+                <a-tab-pane key="2" tab="Thông tin chi tiết">
+                    <div class="p-4 bg-white mt-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="font-semibold">Tác giả:</p>
+                                <p>{{ book?.authors ? book.authors.map(author => author.name).join(', ') : 'N/A' }}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Nhà xuất bản:</p>
+                                <p>{{ book?.publisher?.name }}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Danh mục:</p>
+                                <p>{{ book?.category?.name }}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Số trang:</p>
+                                <p>{{ book?.pages }}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Kích thước: ( chiều dài x chiều rộng)</p>
+                                <p>{{ book?.dimension_length }} x {{ book?.dimension_width }} </p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Mã ISBN:</p>
+                                <p>{{ book?.ISBN }}</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Trọng lượng:</p>
+                                <p>{{ book?.weight }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </a-tab-pane>
+                <a-tab-pane key="3" tab="Đánh giá">
+                    <div class="p-4 bg-white mt-4">
+                        <div class="flex gap-4 items-center">
+                            <div class="flex">
+                                <ins class="text-base font-medium mr-2">4.8</ins>
+                                <span v-for="star in 5" :key="star" class="text-xl">
+                                    <Icon name="i-material-symbols-star" v-if="star <= 4.8" class="text-yellow-500" />
+                                    <Icon name="i-material-symbols-star-outline" v-else class="text-gray-400" />
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a-tab-pane>
+            </a-tabs>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, computed } from 'vue';
+import { useRoute } from 'vue-router';
+import type { IBook } from '~/interfaces/book';
+import type { ICategory } from '~/interfaces/category';
+import type { IResponsePagination } from '~/interfaces/response';
+
+const route = useRoute();
+const query = reactive({
+    'with[]': ['category', 'authors', 'publisher', 'category.parent']
+});
+const { data: book } = await useFetch<IBook>(`/books/`+ route.params.slug, {
+    method: 'get',
+    baseURL: useRuntimeConfig().public.apiBaseUrl,
+    query
+});
+
+// số lượng sách muốn mua
+const quantity = ref(1);
+
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+};
+
+const allImages = computed(() => {
+    if (book.value) {
+        return book.value.cover_image ? [book.value.cover_image, ...book.value.thumbnail] : book.value.thumbnail || [];
+    }
+    return [];
+});
+
+const booksInCategoryQuery = reactive({
+    'with[]': ['category', 'authors', 'publisher', 'category.parent'],
+    paginate: 4
+});
+
+const { data: booksInCategory } = await useFetch<IResponsePagination<IBook[]>>('/book-by-category/' + book.value?.category_id, {
+    method: 'GET',
+    baseURL: useRuntimeConfig().public.apiBaseUrl,
+    query: booksInCategoryQuery,
+});
+
+const buildBreadcrumbs = (category:ICategory|any) => {
+    const breadcrumbs = [];
+    let current = category;
+    while (current) {
+        breadcrumbs.unshift(current);
+        current = current.parent;
+    }
+    return breadcrumbs;
+};
+
+const breadcrumbs = computed(() => {
+    if (book.value && book.value.category) {
+        return buildBreadcrumbs(book.value.category);
+    }
+    return [];
+});
+
+//add to cart
+const access_token = computed(() => useAuthStore().accessToken);
+const handleAddToCart = async () => {
+    const data = {
+        book_id: book.value?.id,
+        quantity: quantity.value
+    };
+    await $fetch('/shopping-carts', {
+        method: 'POST',
+        baseURL: useRuntimeConfig().public.apiBaseUrl,
+        headers: {
+            Authorization: `Bearer ${access_token.value}`
+        },
+        body: data,
+        onResponse: ({response}) => {
+            if (response.ok) {
+                message.success('Thêm sản phẩm vào giỏ hàng thành công');
+            }
+            else{
+                message.error(response._data.message || 'Thêm sản phẩm vào giỏ hàng thất bại');
+            }
+        }
+    });
+};
+</script>
+
+<style scoped>
+/* For demo */
+:deep(.slick-dots) {
+    position: relative;
+    height: auto;
+}
+
+:deep(.slick-slide img) {
+    border: 5px solid #fff;
+    display: block;
+    margin: auto;
+    max-width: 80%;
+}
+
+:deep(.slick-arrow) {
+    display: none !important;
+}
+
+:deep(.slick-thumb) {
+    bottom: 0px;
+}
+
+:deep(.slick-thumb li) {
+    width: 60px;
+    height: 45px;
+}
+
+:deep(.slick-thumb li img) {
+    width: 100%;
+    height: 100%;
+    filter: grayscale(100%);
+    display: block;
+}
+
+:deep .slick-thumb li.slick-active img {
+    filter: grayscale(0%);
+}
+
+.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    list-style: none;
+    border-radius: 0.25rem;
+}
+
+.breadcrumb-item+.breadcrumb-item::before {
+    content: ">";
+    padding: 0 0.5rem;
+    color: #6c757d;
+}
+</style>

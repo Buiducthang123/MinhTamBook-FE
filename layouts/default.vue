@@ -62,7 +62,7 @@
                         </a-button>
                     </a-dropdown>
 
-                    <a-badge count="5" class="border-l-2 ml-2 pl-4 border-black cursor-pointer">
+                    <a-badge :count="shoppingCart ? shoppingCart.length : 0" class="border-l-2 ml-2 pl-4 border-black cursor-pointer">
                         <Icon class="text-xl" name="tdesign:cart" />
                     </a-badge>
                 </div>
@@ -97,10 +97,9 @@
                 </li>
             </ul>
         </div>
-
         <hr class="mt-3">
 
-        <div class="bg-primary">
+        <div class="bg-[#F5F5FA]">
             <div class="md:max-w-[90vw] 2xl:max-w-screen-2xl mx-auto">
                 <slot></slot>
             </div>
@@ -113,6 +112,7 @@
 <script setup lang="ts">
 import type { MenuProps } from 'ant-design-vue';
 import type { IShippingAddress } from '~/interfaces/shipping_address';
+import type { IShoppingCardItem } from '~/interfaces/shopping_card';
 
 const search = ref<string>('');
 
@@ -124,6 +124,8 @@ const authStore = useAuthStore();
 
 const user = computed(() => authStore.user);
 
+const access_token = computed(()=>authStore.accessToken)
+
 const handleMenuClick: MenuProps['onClick'] = e => {
     console.log('click', e);
 };
@@ -134,6 +136,14 @@ const addressDefault = computed(() => {
     }
     return user.value.shipping_addresses.find((address: IShippingAddress) => address.is_default);
 });
+
+const { data:shoppingCart } = useFetch<IShoppingCardItem[]>('/shopping-carts',{
+    method: 'GET',
+    baseURL: useRuntimeConfig().public.apiBaseUrl,
+    headers: {
+        Authorization: `Bearer ${access_token.value}`
+    }
+})
 
 </script>
 
