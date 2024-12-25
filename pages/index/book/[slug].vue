@@ -7,7 +7,8 @@
                 <li class="breadcrumb-item cursor-pointer">
                     <a @click="navigateTo('/')">Trang chủ</a>
                 </li>
-                <li v-for="(breadcrumb, index) in breadcrumbs" :key="breadcrumb.id" class="breadcrumb-item cursor-pointer">
+                <li v-for="(breadcrumb, index) in breadcrumbs" :key="breadcrumb.id"
+                    class="breadcrumb-item cursor-pointer">
                     <a @click="navigateTo('/category/' + (breadcrumb.slug ? breadcrumb.slug : breadcrumb.id))">{{
                         breadcrumb.name }}</a>
                 </li>
@@ -15,7 +16,7 @@
             </ol>
         </nav>
 
-        <div class="p-4 bg-white grid grid-cols-12 gap-10">
+        <div class="p-4 bg-white grid grid-cols-12 gap-x-10">
             <div class="col-span-5">
                 <a-carousel arrows dots-class="slick-dots slick-thumb">
                     <template #customPaging="{ i }">
@@ -53,9 +54,13 @@
                     <a-tag color="red">{{ book?.discount }} %</a-tag>
                 </div>
 
+                <div class="mt-4">
+                    <span>Số lượng sản phẩm còn lại: {{ book?.quantity }}</span>
+                </div>
+
                 <!--Chọn số lượng-->
                 <div class="flex items-center gap-4 mt-6">
-                    <span>Số lượng:</span>
+                    <span>Số lượng mua:</span>
                     <div class="flex items-center gap-2">
                         <a-button @click="quantity > 1 ? quantity-- : null">-</a-button>
                         <a-input-number v-model:value="quantity" min="1" max="100" />
@@ -64,10 +69,13 @@
                 </div>
 
                 <div class="mt-6 flex gap-4">
-                    <a-button type="primary" class="rounded-0" size="large">Mua ngay</a-button>
-                    <a-button size="large" class="rounded-0" @click="handleAddToCart">Thêm sản phẩm vào giỏ hàng</a-button>
+                    <a-button type="primary" class="rounded-0" size="large" @click="handleBuyNow">Mua ngay</a-button>
+                    <a-button size="large" class="rounded-0" @click="handleAddToCart">Thêm sản phẩm vào giỏ
+                        hàng</a-button>
                 </div>
             </div>
+            <p class="col-span-12 text-blue-600 flex items-center justify-center"><a href="#product-detail">Xem mô tả sản phẩm</a>
+            <Icon class="text-3xl"name="i-mdi-light-chevron-down"/></p>
         </div>
 
         <!--Sản phẩm tương tự-->
@@ -82,7 +90,7 @@
             </div>
         </div>
 
-        <div class="mt-6">
+        <div class="mt-6" id="product-detail">
             <h6 class="text-xl font-medium mb-4">Thông tin sản phẩm {{ book?.title }}</h6>
             <a-tabs>
                 <a-tab-pane key="1" tab="Mô tả">
@@ -151,7 +159,7 @@ const route = useRoute();
 const query = reactive({
     'with[]': ['category', 'authors', 'publisher', 'category.parent']
 });
-const { data: book } = await useFetch<IBook>(`/books/`+ route.params.slug, {
+const { data: book } = await useFetch<IBook>(`/books/` + route.params.slug.toString(), {
     method: 'get',
     baseURL: useRuntimeConfig().public.apiBaseUrl,
     query
@@ -176,13 +184,15 @@ const booksInCategoryQuery = reactive({
     paginate: 4
 });
 
-const { data: booksInCategory } = await useFetch<IResponsePagination<IBook[]>>('/book-by-category/' + book.value?.category_id, {
+const { data: booksInCategory } = await useFetch<IResponsePagination<IBook>>('/book-by-category/' + book.value?.category_id.toString(), {
     method: 'GET',
     baseURL: useRuntimeConfig().public.apiBaseUrl,
     query: booksInCategoryQuery,
+    lazy: true,
+    immediate: !!(book.value && book.value.category_id)
 });
 
-const buildBreadcrumbs = (category:ICategory|any) => {
+const buildBreadcrumbs = (category: ICategory | any) => {
     const breadcrumbs = [];
     let current = category;
     while (current) {
@@ -198,7 +208,9 @@ const breadcrumbs = computed(() => {
     }
     return [];
 });
+const cartStore = useCartStore();
 
+const { getMyCart } = cartStore;
 //add to cart
 const access_token = computed(() => useAuthStore().accessToken);
 const handleAddToCart = async () => {
@@ -213,16 +225,32 @@ const handleAddToCart = async () => {
             Authorization: `Bearer ${access_token.value}`
         },
         body: data,
-        onResponse: ({response}) => {
+        onResponse: ({ response }) => {
             if (response.ok) {
                 message.success('Thêm sản phẩm vào giỏ hàng thành công');
+                if (access_token.value) {
+                    getMyCart(access_token.value);
+                }
             }
-            else{
+            else {
                 message.error(response._data.message || 'Thêm sản phẩm vào giỏ hàng thất bại');
             }
         }
     });
 };
+
+// handle buy now set local storage item and quantity after that navigate to cart page
+
+const handleBuyNow = async () => {
+    const data = {
+        book_id: book.value?.id,
+        quantity: quantity.value
+    };
+    localStorage.setItem('buyNow', JSON.stringify(data));
+    navigateTo('/checkout/buy-now');
+};
+
+
 </script>
 
 <style scoped>
@@ -277,4 +305,5 @@ const handleAddToCart = async () => {
     padding: 0 0.5rem;
     color: #6c757d;
 }
+
 </style>

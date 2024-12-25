@@ -1,8 +1,6 @@
 <template>
-    <NuxtLayout name="default">        
-        <NuxtLayout name="customer-account">
-            <NuxtPage/>
-        </NuxtLayout>
+    <NuxtLayout name="customer-account">
+        <NuxtPage/>
     </NuxtLayout>
 </template>
 

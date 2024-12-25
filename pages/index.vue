@@ -1,31 +1,33 @@
 <template>
-    <NuxtPage/>    
+    <NuxtLayout name="default">
+        <NuxtPage />
+    </NuxtLayout>
 </template>
 
 <script setup lang="ts">
 
-onMounted(async() => {
-const authStore = useAuthStore();
-const { setUser } = authStore;
-const accessToken = useCookie('access_token');
-if (accessToken) {
-    await $fetch('user-me', {
-        method: 'GET',
-        baseURL: useRuntimeConfig().public.apiBaseUrl,
-        headers: {
-            Authorization: `Bearer ${accessToken.value}`
-        },
-        onResponse: ({ response }) => {
-            if (response.ok) {
-                setUser(response._data);
+onMounted(async () => {
+    const authStore = useAuthStore();
+    const { setUser } = authStore;
+    const accessToken = useCookie('access_token');
+    if (accessToken) {
+        await $fetch('user-me', {
+            method: 'GET',
+            baseURL: useRuntimeConfig().public.apiBaseUrl,
+            headers: {
+                Authorization: `Bearer ${accessToken.value}`
+            },
+            onResponse: ({ response }) => {
+                if (response.ok) {
+                    setUser(response._data);
+                }
+                else {
+                    accessToken.value = null
+                }
             }
-            else {
-                accessToken.value = null
-            }
-        }
-    })
+        })
 
-}
+    }
 })
 
 useHead({
@@ -41,6 +43,4 @@ useHead({
 })
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

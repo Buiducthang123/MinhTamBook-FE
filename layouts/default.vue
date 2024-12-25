@@ -1,14 +1,13 @@
 <template>
-    <div class="">
+    <div class="h-screen overflow-y-scroll">
         <div class="text-center bg-[#EFFEF4] py-3 mb-3">
-            <p class="text-green-600 text-xs font-semibold">Freeship đơn từ 45k, giảm nhiểu hơn cùng
-                <span class="text-blue-500 font-bold italic">FREESHIP </span>
-                <span class="font-extrabold italic">XTRA</span>
+            <p class="text-green-600 text-xs font-semibold">Freeship khi đặt 10 sản phẩm, giảm với
+                <span class="text-blue-500 font-bold italic"> chương trình ưu đãi </span>
             </p>
         </div>
         <div class="md:max-w-[90vw] 2xl:max-w-screen-2xl mx-auto flex justify-between gap-10">
             <div class="w-fit flex flex-col justify-center ">
-                <NuxtImg class="w-24 h-12" src="images/logo.png" />
+                <NuxtImg class="w-24 h-12 cursor-pointer" src="images/logo.png" @click="navigateTo('/')" />
                 <h4 class="text-base mt-2 font-medium text-[#003ea1]">Tốt & Nhanh</h4>
             </div>
             <div class="w-[60%]">
@@ -47,10 +46,10 @@
                                 <a-menu-item key="1" @click="navigateTo('/customer')">
                                     Thông tin tài khoản
                                 </a-menu-item>
-                                <a-menu-item key="2">
+                                <a-menu-item key="2" @click="navigateTo('/customer/orders')">
                                     Đơn hàng của tôi
                                 </a-menu-item>
-                                <a-menu-item key="3">
+                                <a-menu-item key="3" @click="handleLogout(false)">
                                     Đăng xuất
                                 </a-menu-item>
                             </a-menu>
@@ -62,7 +61,9 @@
                         </a-button>
                     </a-dropdown>
 
-                    <a-badge :count="shoppingCart ? shoppingCart.length : 0" class="border-l-2 ml-2 pl-4 border-black cursor-pointer">
+                    <a-badge :count="myCart.length" class="border-l-2 ml-2 pl-4 border-black cursor-pointer"
+                    @click="navigateTo('/my-cart')"
+                    >
                         <Icon class="text-xl" name="tdesign:cart" />
                     </a-badge>
                 </div>
@@ -112,7 +113,6 @@
 <script setup lang="ts">
 import type { MenuProps } from 'ant-design-vue';
 import type { IShippingAddress } from '~/interfaces/shipping_address';
-import type { IShoppingCardItem } from '~/interfaces/shopping_card';
 
 const search = ref<string>('');
 
@@ -137,13 +137,40 @@ const addressDefault = computed(() => {
     return user.value.shipping_addresses.find((address: IShippingAddress) => address.is_default);
 });
 
-const { data:shoppingCart } = useFetch<IShoppingCardItem[]>('/shopping-carts',{
-    method: 'GET',
-    baseURL: useRuntimeConfig().public.apiBaseUrl,
-    headers: {
-        Authorization: `Bearer ${access_token.value}`
+const cartStore = useCartStore();
+
+const myCart = computed(() => cartStore.myCart);
+
+onMounted(() => {
+    if (access_token.value) {
+        cartStore.getMyCart(access_token.value);
     }
-})
+});
+
+const handleLogout = async(isLogoutAll:boolean) => {
+    await $fetch('/logout',{
+        method:'POST',
+        headers:{
+            'Authorization':`Bearer ${access_token.value}`
+        },
+        baseURL:useRuntimeConfig().public.apiBaseUrl,
+        body:{
+            isLogoutAll:isLogoutAll
+        },
+        onResponse:({response})=>{
+            if(response.ok){
+                authStore.setAccessToken(null);
+                //load lại trang
+                window.location.reload();
+                message.success('Đăng xuất thành công');
+            }
+            else{
+                message.error('Đăng xuất thất bại');
+            }
+        }
+        
+    })
+};
 
 </script>
 

@@ -20,6 +20,7 @@ export interface IBook {
     discount: number;
     pages: number;
     weight: number;
+    height: number;
     dimension_length: number;
     dimension_width: number;
     deleted_at: string | null;

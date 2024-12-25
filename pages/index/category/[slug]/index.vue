@@ -75,11 +75,13 @@ onMounted(() => {
 const bookQuery = reactive({
     'with[]': ['authors', 'publisher', 'category'],
     page: 1,
-    sort: 'asc',
+    sort: 'all',
     rating: 'all',
     paginate: 12,
-    priceFrom: 0,
-    priceTo: 10000000,
+    filter:{
+        priceFrom: 0,
+        priceTo: 10000000,
+    }
 });
 
 const { data: books } = await useFetch<IResponsePagination<IBook>>('/book-by-category/' + 1, {
