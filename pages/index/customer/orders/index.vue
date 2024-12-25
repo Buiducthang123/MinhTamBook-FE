@@ -5,7 +5,7 @@
             <div>
                 <a-radio-group v-model:value="orderQuery.filter.status" button-style="solid">
                     <a-radio-button value="0">Tất cả</a-radio-button>
-                    <a-radio-button v-for="(item, key) in OrderStatusText" :key="key" :value="key">
+                    <a-radio-button v-for="(item, key) in OrderStatusText" :key="key" :value="Number.parseInt(key.toString())">
                         {{ item }}
                     </a-radio-button>
                 </a-radio-group>
@@ -39,20 +39,16 @@
                                                 author.name).join(', ') }}</div>
 
                                         <div class="text-base font-semibold">Tổng tiền:
-                                            <span class="text-red-500"> {{ formatCurrency((item.price *
-                                                (100
-                                                    -
-                                                    item.discount_amount) / 100) * item.quantity) }}</span>
+                                           
+                                            <span class="text-red-500"> {{ formatCurrency((item.price * (100 - item.discount )/100)* item.quantity) }}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="flex items-start gap-4">
                                     <div class="flex items-center gap-2">
                                         <del class="text-gray-500">{{ formatCurrency(item.book?.price) }}</del>
-                                        <div class="text-lg font-semibold text-red-500">{{ formatCurrency(item.price *
-                                            (100
-                                                -
-                                                item.discount_amount) / 100) }}</div>
+                                      
+                                        <div class="text-lg font-semibold text-red-500">{{ formatCurrency(item.price * (100 - item.discount)/100) }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -91,9 +87,8 @@
 
                                 <div>
                                     <div class=" font-semibold">Tiền hàng: <span class="text-red-500">{{
-                                        formatCurrency(order.order_items?.map
-                                            (item => (item.price * (100 - item.discount_amount) / 100) *
-                                                item.quantity).reduce((a, b) => a + b, 0)) }}
+                                        formatCurrency(order.order_items?.reduce
+                                            ((total, item) => total + (item.price * (100 - item.discount) /100 ) * item.quantity, 0)) }} 
                                         </span>
                                     </div>
                                 </div>

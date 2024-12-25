@@ -158,6 +158,7 @@
 <script setup lang="ts">
 import { EPaymentMethod, EPaymentMethodText } from '~/enums/payment-method.enum';
 import type { IBook } from '~/interfaces/book';
+import type { IShippingAddress } from '~/interfaces/shipping_address';
 
 
 interface IBookBuyNow {
@@ -168,6 +169,8 @@ interface IBookBuyNow {
 const authStore = useAuthStore();
 
 const user = computed(() => authStore.user);
+
+const accessToken = computed(() => authStore.accessToken);
 
 const defaultAddress = computed(() => user.value?.shipping_addresses?.find((address) => address.is_default) ?? null);
 
@@ -199,7 +202,7 @@ const totalShippingFee = ref(0);
 
 const formGetShippingFee = reactive({
     'shop_id': 194655,
-    "service_id": 53321,
+    "service_id": 53322,
     // "insurance_value": 500000,
     "coupon": null,
     "to_district_id": defaultAddress.value?.district?.DistrictID,
@@ -234,11 +237,20 @@ const handleGetShippingFee = async () => {
     })
 }
 
+
 const formCreateOrder = reactive({
-    book_id: bookSelect?.value?.book_id,
     quantity: bookSelect?.value?.quantity,
     payment_method: EPaymentMethod.COD.toString(),
     note: '',
+    items: [
+        {
+            book_id: bookSelect?.value?.book_id,
+            quantity: bookSelect?.value?.quantity,
+            price: bookBuyNow?.value?.price,
+            discount: bookBuyNow.value?.discount,
+        }
+    ],
+    shipping_address: undefined as any,
 });
 
 onBeforeMount(() => {
@@ -259,10 +271,56 @@ watch(() => bookBuyNow.value, () => {
     if (defaultAddress.value) {
         handleGetShippingFee();
     }
+    if(bookBuyNow.value){
+        formCreateOrder.items = [
+            {
+                book_id: bookSelect?.value?.book_id,
+                quantity: bookSelect?.value?.quantity,
+                price: bookBuyNow?.value?.price,
+                discount: bookBuyNow.value.discount,
+            }
+        ]
+    }
 }, { immediate: true });
 
+// kiểm tra số lượng sách mua không vượt quá số lượng sách còn lại
+const handleCheckQuantity = () => {
+    if(bookSelect.value.quantity > (bookBuyNow.value?.quantity ?? 0)){
+        message.error('Số lượng sách mua không được vượt quá số lượng sách còn lại');
+        return false;
+    }
+    return true;
+}
+
 const handlePurchase = async () => {
-    
+    formCreateOrder.shipping_address = defaultAddress.value ?? undefined;
+
+    // if (!handleCheckQuantity()) {
+    //     return;
+    // }
+
+    await $fetch('/orders', {
+        method: 'POST',
+        body: formCreateOrder,
+        headers: {
+            Authorization: `Bearer ${accessToken.value}`
+        },
+        baseURL: useRuntimeConfig().public.apiBaseUrl,
+        onResponse: ({ response }) => {
+            if (response.ok) {
+                if (formCreateOrder.payment_method === EPaymentMethod.BANK_TRANSFER.toString()) {
+                    window.location.href = response._data;
+                }
+                else {
+                    message.success('Đặt hàng thành công, vui lòng chờ xác nhận từ admin');
+                    navigateTo('/customer/orders')
+                }
+            }
+            else {
+                message.error(response._data.message || 'Có lỗi xảy ra vui lòng thử lại sau');
+            }
+        }
+    })
 }
 
 </script>

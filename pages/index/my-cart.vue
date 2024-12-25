@@ -14,6 +14,8 @@
                                 <div class="w-56">
                                     <h6 class="text-xl font-medium">{{ record.title }}</h6>
                                     <p v-html="record.short_description"></p>
+                                    <p v-if="record.quantity && record.quantity>0">Số lượng trong kho : {{ record.quantity }}</p>
+                                    <p v-else class="text-red-500 mt-2 text-sm">Sản phẩm này đã hết hàng !</p>
                                 </div>
                             </div>
                         </template>
@@ -245,42 +247,42 @@ const handleDelete = async (id: number) => {
     });
 };
 
-const handleUpdateQuantity = async (id: number, quantity: number) => {
-    await $fetch(`/shopping-carts/${id}`, {
-        method: 'PATCH',
-        baseURL: useRuntimeConfig().public.apiBaseUrl,
-        headers: {
-            Authorization: `Bearer ${access_token.value}`
-        },
-        body: {
-            quantity
-        },
-        onResponse: ({ response }) => {
-            if (response.ok) {
-                refreshShoppingCart();
-            } else {
-                console.log(response);
-            }
-        }
-    });
-};
+// const handleUpdateQuantity = async (id: number, quantity: number) => {
+//     await $fetch(`/shopping-carts/${id}`, {
+//         method: 'PATCH',
+//         baseURL: useRuntimeConfig().public.apiBaseUrl,
+//         headers: {
+//             Authorization: `Bearer ${access_token.value}`
+//         },
+//         body: {
+//             quantity
+//         },
+//         onResponse: ({ response }) => {
+//             if (response.ok) {
+//                 refreshShoppingCart();
+//             } else {
+//                 console.log(response);
+//             }
+//         }
+//     });
+// };
 
 const decreaseQuantity = (record: any) => {
     if (record.pivot.quantity > 1) {
         record.pivot.quantity--;
-        handleUpdateQuantity(record.pivot.id, record.pivot.quantity);
+        // handleUpdateQuantity(record.pivot.id, record.pivot.quantity);
     }
 };
 
 const increaseQuantity = (record: any) => {
     if (record.pivot.quantity < 10) {
         record.pivot.quantity++;
-        handleUpdateQuantity(record.pivot.id, record.pivot.quantity);
+        // handleUpdateQuantity(record.pivot.id, record.pivot.quantity);
     }
 };
 
 const updateQuantity = (record: any) => {
-    handleUpdateQuantity(record.pivot.id, record.pivot.quantity);
+    // handleUpdateQuantity(record.pivot.id, record.pivot.quantity);
 };
 
 //item selected 
@@ -321,7 +323,7 @@ const totalHeight = computed(() => itemBookSelect.value.reduce((total, item) => 
 
 const formGetShippingFee = reactive({
     'shop_id': 194655,
-    "service_id": 53321,
+    "service_id": 53322,
     // "insurance_value": 500000,
     "coupon": null,
     "to_district_id": defaultAddress.value?.district?.DistrictID,
@@ -368,6 +370,7 @@ watch(() => itemBookSelect.value, () => {
 
         if (totalQuantity.value <= 10) {
             handleGetShippingFee();
+            handleGetService();
         }
     }
     else {
@@ -393,27 +396,48 @@ const itemSelectSubmit = computed(() => {
             book_id: item.id,
             quantity: item.pivot?.quantity ?? 0,
             price: item.price,
-            discount_amount: item.discount,
+            discount: item.discount
         }
     })
 })
 
 import type { IShippingAddress } from '~/interfaces/shipping_address';
 
-const formCreateOrder = reactive<{
+interface IFormCreateOrder {
     payment_method: string;
     items: any,
     note: string;
     shipping_address: IShippingAddress | undefined;
-}>({
+}
+
+const formCreateOrder = reactive<IFormCreateOrder>({
     payment_method: EPaymentMethod.COD.toString(),
     items: itemSelectSubmit,
     note: '',
     shipping_address: undefined,
 })
 
+//Kiểm tra số lượng mua 1 sản phẩm có vượt quá số lượng sản phẩm của book không
+
+const handleCheckQuantity = () => {
+    return itemBookSelect.value.every(item => {
+        if ((item.pivot?.quantity ?? 0) > (item?.quantity ?? 0)) {
+            message.error(`Số lượng sản phẩm ${item.title} không đủ `);
+            return false; // Dừng nếu điều kiện không thỏa mãn
+        }
+        return true;
+    });
+};
+
 const handlePurchase = async () => {
     formCreateOrder.shipping_address = defaultAddress.value ?? undefined;
+
+    let checkQuantity = handleCheckQuantity();
+
+    if (!checkQuantity) {
+        return ;
+    }
+
     await $fetch('/orders', {
         method: 'POST',
         body: formCreateOrder,
@@ -436,6 +460,7 @@ const handlePurchase = async () => {
             }
         }
     })
+    
 }
 
 </script>
