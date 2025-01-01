@@ -1,7 +1,7 @@
 <template>
 
     <a-carousel arrows :slides-to-show="promotionData?.data?.length ? Math.min(promotionData.data.length, 2) : 0"
-        class="carousel" dots-class="slick-dots">
+        class="carousel mb-6" dots-class="slick-dots">
         <template #prevArrow>
             <div class="custom-slick-arrow" style="left: 10px; z-index: 1">
                 <left-circle-outlined />
@@ -86,9 +86,6 @@ const promotionQuery = reactive({
     }
 })
 
-console.log(promotionQuery);
-
-
 const { data: promotionData } = await useFetch<IResponsePagination<IPromotion>>('/promotions', {
     method: 'GET',
     headers: {
@@ -108,7 +105,6 @@ const redirectToPromotion = (promotion: IPromotion) => {
         message.warning('Sự kiện trong thời gian không hoạt động')
     }
 }
-
 
 
 </script>

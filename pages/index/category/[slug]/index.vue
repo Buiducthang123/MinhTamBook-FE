@@ -84,7 +84,7 @@ const bookQuery = reactive({
     }
 });
 
-const { data: books } = await useFetch<IResponsePagination<IBook>>('/book-by-category/' + 1, {
+const { data: books } = await useFetch<IResponsePagination<IBook>>('/book-by-category/' + currentCategory.value?.id, {
     method: 'GET',
 
     baseURL: useRuntimeConfig().public.apiBaseUrl,

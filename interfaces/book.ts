@@ -3,6 +3,13 @@ import type { IAuthor } from "./author";
 import type { ICategory } from "./category";
 import type { IPublisher } from "./publisher";
 
+
+export interface IDiscountTier {
+    id: number;
+    book_id: number;
+    minimum_quantity: number;
+    price: number;
+}
 export interface IBook {
     id: number;
     category_id: number;
@@ -30,4 +37,5 @@ export interface IBook {
     authors?: IAuthor[];
     publisher?: IPublisher;
     category?: ICategory;
+    discount_tiers?: IDiscountTier[];
 }

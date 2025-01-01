@@ -5,28 +5,41 @@
         <div class="flex gap-4">
             <div class="w-3/4">
                 <a-table :columns="columns" bordered :data-source="sortItemSelect ?? []" :row-key="record => record.id"
-                    :pagination="false"
-                    :row-selection="{ selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange }">
+                    :pagination="false" :row-selection="{
+                        // selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange, getCheckboxProps: (record) => ({
+                        //     disabled: record.quantity === 0, // Disable checkbox if quantity is 0
+                        // }),
+                        selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange,
+                    }">
                     <template #bodyCell="{ record, column }">
                         <template v-if="column.dataIndex === 'title'">
                             <div class="gap-4 flex ">
                                 <a-image class="object-cover" :width="100" :height="150" :src="record.cover_image" />
                                 <div class="w-56">
-                                    <h6 class="text-xl font-medium">{{ record.title }}</h6>
-                                    <p v-html="record.short_description"></p>
-                                    <p v-if="record.quantity && record.quantity>0">Số lượng trong kho : {{ record.quantity }}</p>
+                                    <h6 class="text-xl font-medium line-clamp-2">{{ record.title }}</h6>
+                                    <p class="line-clamp-2" v-html="record.short_description"></p>
+                                    <p v-if="record.quantity && record.quantity > 0">Số lượng trong kho : {{
+                                        record.quantity }}</p>
                                     <p v-else class="text-red-500 mt-2 text-sm">Sản phẩm này đã hết hàng !</p>
                                 </div>
                             </div>
                         </template>
 
                         <template v-if="column.dataIndex === 'price'">
-                            <div class="space-x-4">
-                                <span class="text-red-500 text-xl font-medium">{{ formatCurrency(record.price *
-                                    (100 - record.discount) / 100) }}</span>
-                                <del>{{ formatCurrency(record.price) }}</del>
+                            <div class="">
+                                <div class="space-x-4">
+                                    <span class="text-red-500 text-xl font-medium">{{
+                                        formatCurrency(calculatePrice(record as IShoppingCardItem))
+                                    }}</span>
+                                    <del>{{ formatCurrency(record.price)
+                                        }}</del>
+                                </div>
+                                <div class="text-center text-nowrap">
+                                    <a-badge v-if="record.isApplyingDiscount" status="success"
+                                        text="Đã áp dụng chiết khấu" class="mx-auto" />
+                                </div>
                             </div>
-                            <div>
+                            <div v-if="user?.role?.name.toLowerCase() !== 'company'">
                                 <span>Giảm: </span>
                                 <span class="text-green-500 font-medium">{{ record.discount }}%</span>
                             </div>
@@ -35,14 +48,20 @@
                         <template v-if="column.dataIndex === 'quantity'">
                             <div class="flex gap-4">
                                 <a-button class="border" @click="decreaseQuantity(record)">-</a-button>
-                                <a-input v-model:value="record.pivot.quantity" :min="1" :max="10"
-                                    @change="updateQuantity(record)" />
+                                <a-input v-model:value="record.pivot.quantity" :min="1" :max="10" @change="" />
                                 <a-button class="border" @click="increaseQuantity(record)">+</a-button>
                             </div>
                         </template>
 
+                        <template v-if="column.dataIndex === 'discount'">
+                            <span>{{ record.isApplyingDiscount ? 0 : record.discount }}%</span>
+                        </template>
+
                         <template v-if="column.dataIndex === 'total_price'">
-                            {{ formatCurrency(record.price * (100 - record.discount) / 100 * record.pivot.quantity) }}
+                            {{ user?.role?.name === 'company' ? formatCurrency((calculatePrice(record as
+                                IShoppingCardItem) as number) * record.pivot.quantity)
+                                : formatCurrency(record.price * (100 - record.discount) / 100 * (record?.pivot?.quantity ??
+                                    0)) }}
                         </template>
 
                         <template v-if="column.dataIndex === 'action'">
@@ -85,13 +104,15 @@
                     <div class="space-y-4">
                         <div class="flex justify-between">
                             <span>Tổng tiền hàng: </span>
-                            <span class="font-bold">{{ formatCurrency(totalItemSelect) }}</span>
+                            
+                            <span class="font-bold">{{ formatCurrency(totalPriceItemSelect) }}</span>
                         </div>
 
                         <div class="flex justify-between">
                             <span>Giảm giá: </span>
-                            <span class="text-green-500 font-bold">- {{ formatCurrency(totalItemSelect -
-                                totalItemSelectDiscount)
+
+                            <span class="text-green-500 font-bold"> - {{ formatCurrency((totalItemSelectDiscount)
+                            )
                                 }}</span>
                         </div>
 
@@ -111,14 +132,14 @@
 
                     <div class="flex justify-between items-start">
                         <span>Tổng cộng: </span>
-                        <span class="text-xl font-medium text-red-600">{{ formatCurrency(totalItemSelectDiscount +
+                        <span class="text-xl font-medium text-red-600">{{ formatCurrency(totalPriceItemSelect +
                             totalShippingFee)
                             }}</span>
                     </div>
 
                     <div class="text-end mt-4 text-green-600">
-                        <span>Tiết kiệm </span>
-                        <span>{{ formatCurrency(totalItemSelect - totalItemSelectDiscount) }}</span>
+                        <span>Tiết kiệm: </span>
+                        <span>{{ formatCurrency(totalItemSelectDiscount) }}</span>
                     </div>
 
                     <!--Chọn hình thức thanh toán-->
@@ -156,7 +177,6 @@
                         <span class="text-green-600">free
                             ship</span>
                     </p>
-
                 </div>
             </div>
         </div>
@@ -184,6 +204,12 @@ const { data: shoppingCart, refresh: refreshShoppingCart } = await useFetch<ISho
     baseURL: useRuntimeConfig().public.apiBaseUrl,
     headers: {
         Authorization: `Bearer ${access_token.value}`
+    },
+    transform: (data) => {
+        data.forEach((item) => {
+            item.isApplyingDiscount = false;
+        });
+        return data;
     }
 });
 
@@ -206,6 +232,11 @@ const columns = [
         width: '150px'
     },
     {
+        title: 'Giảm giá',
+        dataIndex: 'discount',
+        key: 'discount',
+    },
+    {
         title: 'Thành tiền',
         dataIndex: 'total_price',
         key: 'total_price',
@@ -226,8 +257,22 @@ const state = reactive<{
 });
 
 const onSelectChange = (selectedRowKeys: (string | number)[]) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
+    if (user.value?.shipping_addresses?.length === 0) {
+        message.error('Vui lòng thêm địa chỉ nhận hàng');
+        return;
+    }
+
+    //Kiểm tra sản phẩm chọn có hết hàng không nếu có thì bỏ chọn
+
     state.selectedRowKeys = selectedRowKeys;
+};
+
+const rowSelection = {
+    selectedRowKeys: state.selectedRowKeys,
+    onChange: onSelectChange,
+    getCheckboxProps: (record: IShoppingCardItem) => ({
+        disabled: record.quantity === 0, // Disable checkbox if quantity is 0
+    }),
 };
 
 const handleDelete = async (id: number) => {
@@ -247,42 +292,16 @@ const handleDelete = async (id: number) => {
     });
 };
 
-// const handleUpdateQuantity = async (id: number, quantity: number) => {
-//     await $fetch(`/shopping-carts/${id}`, {
-//         method: 'PATCH',
-//         baseURL: useRuntimeConfig().public.apiBaseUrl,
-//         headers: {
-//             Authorization: `Bearer ${access_token.value}`
-//         },
-//         body: {
-//             quantity
-//         },
-//         onResponse: ({ response }) => {
-//             if (response.ok) {
-//                 refreshShoppingCart();
-//             } else {
-//                 console.log(response);
-//             }
-//         }
-//     });
-// };
-
 const decreaseQuantity = (record: any) => {
     if (record.pivot.quantity > 1) {
         record.pivot.quantity--;
-        // handleUpdateQuantity(record.pivot.id, record.pivot.quantity);
     }
 };
 
 const increaseQuantity = (record: any) => {
     if (record.pivot.quantity < 10) {
         record.pivot.quantity++;
-        // handleUpdateQuantity(record.pivot.id, record.pivot.quantity);
     }
-};
-
-const updateQuantity = (record: any) => {
-    // handleUpdateQuantity(record.pivot.id, record.pivot.quantity);
 };
 
 //item selected 
@@ -292,13 +311,24 @@ const itemBookSelect = computed(() => {
 });
 
 //tống tiền item selected chưa giảm giá
-const totalItemSelect = computed(() => {
-    return itemBookSelect.value.reduce((total, item) => total + item.price * (item?.pivot?.quantity ?? 0), 0);
+const totalPriceItemSelect = computed(() => {
+    if (user.value?.role?.name.toLowerCase() != 'company') {
+        return itemBookSelect.value.reduce((total, item) => total + item.price * (100 - item.discount) / 100 * (item?.pivot?.quantity ?? 0), 0);
+    }
+    return itemBookSelect.value.reduce((total, item) => total + calculatePrice(item) * (item?.pivot?.quantity ?? 0), 0);
 });
 
 //tống tiền item selected đã giảm giá
 const totalItemSelectDiscount = computed(() => {
-    return itemBookSelect.value.reduce((total, item) => total + item.price * (100 - item.discount) / 100 * (item?.pivot?.quantity ?? 0), 0);
+    if (user.value?.role?.name.toLowerCase() == 'company' && itemBookSelect.value.length > 0) {
+        return itemBookSelect.value.reduce((total, item) => {
+            if (item.isApplyingDiscount) {
+                return 0;
+            }
+            return Number(total) + item.price * (item.discount) / 100 * (item?.pivot?.quantity ?? 0);
+        }, 0);
+    }
+    return itemBookSelect.value.reduce((total, item) => total + item.price * (item.discount) / 100 * (item?.pivot?.quantity ?? 0), 0);
 });
 
 // sắp xếp hiển thịthị item được chọn hiện lên đầu
@@ -317,13 +347,13 @@ const sortItemSelect = computed(() => {
 const totalShippingFee = ref(0);
 const totalWeight = computed(() => itemBookSelect.value.reduce((total, item) => total + item.weight * (item?.pivot?.quantity ?? 0), 0));
 const totalQuantity = computed(() => itemBookSelect.value.reduce((total, item) => total + (item?.pivot?.quantity ?? 0), 0));
-const totalLength = computed(() => itemBookSelect.value.reduce((total, item) => total + item.dimension_length * (item?.pivot?.quantity ?? 0), 0));
-const totalWidth = computed(() => itemBookSelect.value.reduce((total, item) => total + item.dimension_width * (item?.pivot?.quantity ?? 0), 0));
 const totalHeight = computed(() => itemBookSelect.value.reduce((total, item) => total + item.height * (item?.pivot?.quantity ?? 0), 0));
+const totalLength = computed(() => Math.max(...itemBookSelect.value.map(item => item.dimension_length)));
+const totalWidth = computed(() => Math.max(...itemBookSelect.value.map(item => item.dimension_width)));
 
 const formGetShippingFee = reactive({
     'shop_id': 194655,
-    "service_id": 53322,
+    "service_id": 53321,
     // "insurance_value": 500000,
     "coupon": null,
     "to_district_id": defaultAddress.value?.district?.DistrictID,
@@ -368,15 +398,25 @@ watch(() => itemBookSelect.value, () => {
         formGetShippingFee.weight = Math.ceil(totalWeight.value);
         formGetShippingFee.width = Math.ceil(totalWidth.value);
 
-        if (totalQuantity.value <= 10) {
+        if (totalQuantity.value < 10) {
             handleGetShippingFee();
             handleGetService();
         }
-    }
-    else {
-        totalShippingFee.value = 0;
+        else {
+            totalShippingFee.value = 0;
+        }
     }
 }, { immediate: true });
+
+watch(totalQuantity, async (newValue) => {
+    if (newValue >= 10) {
+        totalShippingFee.value = 0;
+    }
+    else {
+        handleGetShippingFee();
+        handleGetService();
+    }
+})
 
 watch(() => defaultAddress.value, () => {
     if (defaultAddress.value) {
@@ -388,7 +428,6 @@ watch(() => defaultAddress.value, () => {
 //Mua hàng
 
 const paymentOptions = EPaymentMethodText;
-
 
 const itemSelectSubmit = computed(() => {
     return itemBookSelect.value.map((item) => {
@@ -432,11 +471,11 @@ const handleCheckQuantity = () => {
 const handlePurchase = async () => {
     formCreateOrder.shipping_address = defaultAddress.value ?? undefined;
 
-    let checkQuantity = handleCheckQuantity();
+    // let checkQuantity = handleCheckQuantity();
 
-    if (!checkQuantity) {
-        return ;
-    }
+    // if (!checkQuantity) {
+    //     return;
+    // }
 
     await $fetch('/orders', {
         method: 'POST',
@@ -448,7 +487,7 @@ const handlePurchase = async () => {
         onResponse: ({ response }) => {
             if (response.ok) {
                 if (formCreateOrder.payment_method === EPaymentMethod.BANK_TRANSFER.toString()) {
-                    window.location.href = response._data;
+                    // window.location.href = response._data;
                 }
                 else {
                     message.success('Đặt hàng thành công, vui lòng chờ xác nhận từ admin');
@@ -460,8 +499,25 @@ const handlePurchase = async () => {
             }
         }
     })
-    
+
 }
+
+
+const calculatePrice = (record: IShoppingCardItem) => {
+    if (user.value?.role?.name === 'company' && record.pivot?.quantity) {
+        const quantity = record.pivot?.quantity;
+        const discountTier = (record?.discount_tiers ?? [])
+            .filter(tier => quantity >= tier.minimum_quantity)
+            .sort((a, b) => b.minimum_quantity - a.minimum_quantity)[0];
+
+        if (discountTier) {
+            record.isApplyingDiscount = true;
+            return (discountTier.price);
+        }
+    }
+    record.isApplyingDiscount = false;
+    return (record.price * (100 - record.discount) / 100);
+};
 
 </script>
 

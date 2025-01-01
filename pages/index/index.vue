@@ -48,7 +48,7 @@ const currentCategory = computed(() => {
 });
 
 const bookQuery = reactive({
-    'with[]': ['authors', 'publisher', 'category'],
+    'with[]': ['authors', 'publisher', 'category','discountTiers'],
     page:1,
     sort: 'all',
     rating: 'all',
@@ -56,6 +56,7 @@ const bookQuery = reactive({
     filter:{
         priceFrom: 0,
         priceTo: 10000000,
+        is_sale:1,
     }
 });
 

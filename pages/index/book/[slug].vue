@@ -47,9 +47,7 @@
                     </div>
                 </div>
                 <div class="p-4 bg-[#f1f1f1] mt-4 flex gap-4 items-center">
-                    <span class="text-red-400 text-2xl">{{ book?.discount ? formatCurrency(book.price * (1 -
-                        book.discount / 100)) :
-                        'N/A' }}</span>
+                    <span class="text-red-400 text-2xl">{{ formatCurrency(priceShow) }}</span>
                     <del class="text-gray-500 text-base">{{ formatCurrency(book?.price) }}</del>
                     <a-tag color="red">{{ book?.discount }} %</a-tag>
                 </div>
@@ -74,8 +72,25 @@
                         hàng</a-button>
                 </div>
             </div>
-            <p class="col-span-12 text-blue-600 flex items-center justify-center"><a href="#product-detail">Xem mô tả sản phẩm</a>
-            <Icon class="text-3xl"name="i-mdi-light-chevron-down"/></p>
+
+            <div class="w-full col-span-12 m-10">
+                <a-table class="w-2/3 mx-auto" :columns="discountTiersColumns" :dataSource="discountTiers" bordered
+                    :pagination="false" size="large">
+                    <template #title>
+                        <h6 class="text-xl font-medium">Bảng giá chiết khấu</h6>
+                    </template>
+
+                    <template #emptyText>
+                        <a-empty description="Sản phẩm chưa áp dụng chiết khấu" />
+                    </template>
+                </a-table>
+            </div>
+
+            <p class="col-span-12 my-6 text-blue-600 flex items-center justify-center"><a href="#product-detail">Xem mô
+                    tả sản
+                    phẩm</a>
+                <Icon class="text-3xl" name="i-mdi-light-chevron-down" />
+            </p>
         </div>
 
         <!--Sản phẩm tương tự-->
@@ -90,14 +105,14 @@
             </div>
         </div>
 
-        <div class="mt-6" id="product-detail">
+        <div class="mt-6 bg-white p-6" id="product-detail">
             <h6 class="text-xl font-medium mb-4">Thông tin sản phẩm {{ book?.title }}</h6>
             <a-tabs>
                 <a-tab-pane key="1" tab="Mô tả">
-                    <div class="p-4 bg-white mt-4" v-html="book?.description"></div>
+                    <div class="p- mt-4" v-html="book?.description"></div>
                 </a-tab-pane>
                 <a-tab-pane key="2" tab="Thông tin chi tiết">
-                    <div class="p-4 bg-white mt-4">
+                    <div class="p- mt-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="font-semibold">Tác giả:</p>
@@ -155,15 +170,25 @@ import type { IBook } from '~/interfaces/book';
 import type { ICategory } from '~/interfaces/category';
 import type { IResponsePagination } from '~/interfaces/response';
 
+
+const authStore = useAuthStore();
+const user = computed(() => authStore.user);
 const route = useRoute();
 const query = reactive({
     'with[]': ['category', 'authors', 'publisher', 'category.parent']
 });
+
+if(user.value?.role?.name == 'company') {
+    query['with[]'].push('discountTiers');
+}
+
 const { data: book } = await useFetch<IBook>(`/books/` + route.params.slug.toString(), {
     method: 'get',
     baseURL: useRuntimeConfig().public.apiBaseUrl,
-    query
+    query,
 });
+
+const discountTiers = computed(() => book.value?.discount_tiers?.sort((a, b) => a.minimum_quantity - b.minimum_quantity))
 
 // số lượng sách muốn mua
 const quantity = ref(1);
@@ -250,7 +275,36 @@ const handleBuyNow = async () => {
     navigateTo('/checkout/buy-now');
 };
 
+const discountTiersColumns = [
+    {
+        title: 'Số lượng',
+        dataIndex: 'minimum_quantity',
+        key: 'minimum_quantity',
 
+    },
+    {
+        title: 'Giá bán (VNĐ)/sách',
+        dataIndex: 'price',
+        key: 'price',
+    }
+]
+
+const priceShow = computed(() => {
+    if (book.value) {
+        if (user.value?.role?.name == 'company' && book.value.discount_tiers && book.value.discount_tiers.length > 0) {
+            const discount_tiers = book.value?.discount_tiers ? JSON.parse(JSON.stringify(book.value.discount_tiers)).sort((a: any, b: any) => b.minimum_quantity - a.minimum_quantity) : [];
+            if (discount_tiers && discount_tiers.length > 0) {
+                const discount_tier = discount_tiers.find((tier: any) => Number(quantity.value) >= Number(tier.minimum_quantity));
+                if (discount_tier) {
+                    return discount_tier.price;
+                }
+            }
+            return book.value.discount ? book.value.price * (1 - book.value.discount / 100) : book.value.price;
+        }
+        return book.value.discount ? book.value.price * (1 - book.value.discount / 100) : book.value.price;
+    }
+    return 0;
+});
 </script>
 
 <style scoped>
@@ -305,5 +359,4 @@ const handleBuyNow = async () => {
     padding: 0 0.5rem;
     color: #6c757d;
 }
-
 </style>

@@ -1,8 +1,14 @@
 <template>
-  <article class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300" 
+  <article class="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer" 
   @click="navigateTo(props.book.slug? '/book/'+props.book.slug: '/book/'+props.book.id.toString())">
     <header>
-      <NuxtImg class="w-full h-48 object-cover" :alt="props.book.title" :src="props.book.cover_image" />
+      <div class="relative">
+        <div class="absolute top-0 left-0 bg-red-500 text-white px-2 py-1 rounded-br-lg">
+          {{ props.book.discount }} %
+
+        </div>
+        <NuxtImg class="w-full h-48 object-cover" :alt="props.book.title" :src="props.book.cover_image" />
+      </div>
     </header>
     <section class="p-4">
       <h2 class="text-xl font-semibold mb-2">{{ props.book.title }}</h2>
@@ -29,10 +35,15 @@
           </span>
         </div>
       </div>
-      <div class="text-gray-500">
-        <span class="text-sm">Đã bán: </span>
-        <span class="text-black">9000 sản phẩm</span>
+      <div v-if="props.book.discount_tiers && props.book.discount_tiers.length > 0 && user?.role?.name=='company'" class="text-white font-bold bg-red-400 p-2 rounded-lg mt-3" >
+        {{ props.book.discount_tiers && props.book.discount_tiers.length > 0 ? 'Sản phẩm có áp dụng chiết khấu' : '' }}
       </div>
+
+      <div class="mt-3">
+        <span class="block">Danh mục:</span>
+        <span class="text-sm text-gray-500">{{ props.book.category?.name }}</span>
+      </div>
+
     </section>
     <footer class="p-4 border-t border-gray-200">
       <div>
@@ -49,6 +60,10 @@
 
 <script setup lang="ts">
 import type { IBook } from '~/interfaces/book';
+
+const authStore = useAuthStore();
+
+const user = computed(() => authStore.user);
 
 const props = defineProps<{
   book: IBook

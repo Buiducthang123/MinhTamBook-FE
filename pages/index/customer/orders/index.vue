@@ -17,6 +17,7 @@
                     <div class="space-y-4">
                         <div class="flex justify-between w-full">
                             <div class="text-lg font-semibold">Mã đơn hàng: {{ order.id }}</div>
+                            <a-tag class="text-lg font-medium">{{ EPaymentMethodText[order.payment_method as EPaymentMethod] }}</a-tag>
                             <span class="text-lg font-semibold uppercase text-red-500">
                                 {{ OrderStatusText[order.status as OrderStatus] }}
                             </span>
@@ -37,9 +38,7 @@
                                             class="text-base font-semibold">Tác giả:
                                             {{ item.book?.authors?.map(author =>
                                                 author.name).join(', ') }}</div>
-
                                         <div class="text-base font-semibold">Tổng tiền:
-                                           
                                             <span class="text-red-500"> {{ formatCurrency((item.price * (100 - item.discount )/100)* item.quantity) }}</span>
                                         </div>
                                     </div>
@@ -112,6 +111,7 @@
 <script setup lang="ts">
 import dayjs from '#build/dayjs.imports.mjs';
 import { OrderStatus, OrderStatusText } from '~/enums/orderStatus.enum';
+import { EPaymentMethodText, type EPaymentMethod } from '~/enums/payment-method.enum';
 import type { IOder } from '~/interfaces/order';
 import type { IResponsePagination } from '~/interfaces/response';
 
@@ -124,7 +124,7 @@ const orderQuery = reactive({
     page: 1,
     paginate: 10,
     filter: {
-        status: '0'
+        status: OrderStatus.PENDING
     },
     'with[]': ['orderItems', 'orderItems.book']
 });

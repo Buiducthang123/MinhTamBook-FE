@@ -1,5 +1,5 @@
 <template>
-    <div class="pt-4 h-screen">
+    <div class="pt-4">
         <div class="p-4 ">
             <!--Quay lại trang chủ-->
             <span class="cursor-pointer block mt-4 mb-6" @click="navigateTo('/')">
@@ -10,8 +10,19 @@
                         <div class="flex gap-4 flex-nowrap mt-4">
                             <div class="w-2/3">
                                 <div class="flex gap-5 p-4 bg-white">
-                                    <a-image class="object-contain shadow-sm border" :height="200" :width="150"
-                                        :src="bookBuyNow.cover_image" />
+                                    <div class="relative">
+                                        <div v-if="bookBuyNow.quantity != null && bookBuyNow.quantity <= 0"
+                                            class="absolute z-10 top-0 left-0 bg-white bg-opacity-90 flex items-center justify-center">
+                                            <span>
+                                                <Icon name="i-material-icons-error" class="" />
+                                                <span
+                                                    class=" font-medium bg-red-500 p-1 px-2 rounded-lg text-xs text-white">Hết
+                                                    hàng</span>
+                                            </span>
+                                        </div>
+                                        <a-image class="object-contain shadow-sm border" :height="200" :width="150"
+                                            :src="bookBuyNow.cover_image" />
+                                    </div>
                                     <div class="">
                                         <h6 class="text-xl font-medium mt-2">{{ bookBuyNow.title }}</h6>
                                         <p class="text-base text-gray-500">Tác giả:
@@ -23,23 +34,28 @@
 
                                         <div>
                                             <div class="space-x-4">
-                                                <span class="text-red-500 text-xl font-medium">{{
-                                                    formatCurrency(bookBuyNow.price *
-                                                        (100 - bookBuyNow.discount) / 100) }}</span>
+                                                <span class="text-red-500 text-xl font-medium">
+                                                    {{ formatCurrency(priceShow) }}
+                                                </span>
                                                 <del>{{ formatCurrency(bookBuyNow.price) }}</del>
                                             </div>
                                             <div>
                                                 <span>Giảm: </span>
                                                 <span class="text-green-500 font-medium">{{ bookBuyNow.discount
                                                     }}%</span>
-                                            </div>
 
+                                                <span
+                                                    v-if="user?.role?.name == 'company' && bookBuyNow.discount_tiers && bookBuyNow.discount_tiers.length > 0"
+                                                    class="text-red-500 text-sm font-medium">
+                                                    ( Áp dụng cho sách chưa áp dụng chiết khấu)
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <div class="flex items-center gap-5 mt-2">
                                             <p class="text-base font-medium">Số lượng:</p>
-                                            <a-input-number v-model:value="bookSelect.quantity" :min="1"
-                                                :max="bookBuyNow.quantity" />
+                                            <!--:max="bookBuyNow.quantity" -->
+                                            <a-input-number v-model:value="bookSelect.quantity" :min="1" />
                                         </div>
                                     </div>
                                 </div>
@@ -57,8 +73,20 @@
                                         </div>
                                     </a-radio-group>
                                 </div>
-                            </div>
 
+                                <div class="bg-white mt-4 p-10">
+                                    <a-table class="w-2/3 mx-auto" :columns="discountTiersColumns"
+                                        :dataSource="discountTiers" bordered :pagination="false" size="large">
+                                        <template #title>
+                                            <h6 class="text-xl font-medium">Bảng giá chiết khấu</h6>
+                                        </template>
+
+                                        <template #emptyText>
+                                            <a-empty description="Sản phẩm chưa áp dụng chiết khấu" />
+                                        </template>
+                                    </a-table>
+                                </div>
+                            </div>
                             <div class="w-1/3 bg-white p-4">
                                 <div class="space-y-4">
                                     <div class="flex justify-between p-4 bg-white">
@@ -73,8 +101,7 @@
                                             defaultAddress?.district?.DistrictName }}, {{
                                                 defaultAddress?.province?.ProvinceName }}</p>
                                     </div>
-                                    <div v-else
-                                        class="flex justify-center items-center gap-2 bg-white p-4 
+                                    <div v-else class="flex justify-center items-center gap-2 bg-white p-4 
                                         cursor-pointer text-blue-500 font-medium"
                                         @click="navigateTo('/customer/address')">
                                         <Icon name="i-material-symbols-add" />
@@ -85,20 +112,22 @@
                                     <div class="space-y-4">
                                         <div class="flex justify-between">
                                             <span>Tổng tiền hàng: </span>
-                                            <span class="font-bold">{{ formatCurrency(bookBuyNow.price) }}</span>
+                                            <span class="font-bold">{{ formatCurrency(priceShow * bookSelect.quantity)
+                                                }}</span>
                                         </div>
 
                                         <div class="flex justify-between">
                                             <span>Giảm giá: </span>
-                                            <span class="text-green-500 font-bold">- {{ formatCurrency(bookBuyNow.price
-                                                * bookBuyNow.discount / 100) }}</span>
-
+                                            <span class="text-green-500 font-bold">- {{ isApplyDiscountTiers ?
+                                                formatCurrency(0)
+                                                : formatCurrency(bookBuyNow.price
+                                                    * bookBuyNow.discount / 100) }}</span>
                                         </div>
                                         <div class="flex justify-between">
                                             <span>Tiền hàng:</span>
                                             <span class="text-green
                                 -500 font-bold"> {{ formatCurrency(bookBuyNow.price * (100 - bookBuyNow.discount) /
-                                    100) }}</span>
+                                                100) }}</span>
                                         </div>
 
                                         <div class="flex justify-between">
@@ -113,14 +142,16 @@
                                     <div class="flex justify-between items-start">
                                         <span>Tổng cộng: </span>
                                         <span class="text-xl font-medium text-red-600">{{
-                                            formatCurrency(bookBuyNow.price * (100 - bookBuyNow.discount) / 100 +
-                                                totalShippingFee)
+                                            formatCurrency(priceShow * bookSelect.quantity + totalShippingFee)
                                         }}</span>
                                     </div>
 
                                     <div class="text-end mt-4 text-green-600">
                                         <span>Tiết kiệm </span>
-                                        <span>{{ formatCurrency(bookBuyNow.price * bookBuyNow.discount / 100) }}</span>
+                                        <span>{{
+                                            isApplyDiscountTiers ? formatCurrency(0) : formatCurrency(bookBuyNow.price *
+                                                bookBuyNow.discount / 100)
+                                            }}</span>
                                     </div>
 
                                     <!--Ghi chú-->
@@ -158,11 +189,9 @@
 <script setup lang="ts">
 import { EPaymentMethod, EPaymentMethodText } from '~/enums/payment-method.enum';
 import type { IBook } from '~/interfaces/book';
-import type { IShippingAddress } from '~/interfaces/shipping_address';
-
 
 interface IBookBuyNow {
-    book_id: number;
+    book_id: number | undefined;
     quantity: number;
 }
 
@@ -174,12 +203,12 @@ const accessToken = computed(() => authStore.accessToken);
 
 const defaultAddress = computed(() => user.value?.shipping_addresses?.find((address) => address.is_default) ?? null);
 
-const bookSelect = ref<IBookBuyNow | any>()
+const bookSelect = ref<IBookBuyNow>({ book_id: undefined, quantity: 1 })
 
 const bookBuyNow = ref<IBook>();
 
 const query = reactive({
-    'with[]': ['category', 'authors', 'publisher', 'category.parent']
+    'with[]': ['category', 'authors', 'publisher', 'category.parent', 'discountTiers']
 });
 
 watch(bookSelect, async (newValue, oldValue) => {
@@ -199,10 +228,9 @@ watch(bookSelect, async (newValue, oldValue) => {
 
 const totalShippingFee = ref(0);
 
-
 const formGetShippingFee = reactive({
     'shop_id': 194655,
-    "service_id": 53322,
+    "service_id": 53321,
     // "insurance_value": 500000,
     "coupon": null,
     "to_district_id": defaultAddress.value?.district?.DistrictID,
@@ -217,14 +245,24 @@ const formGetShippingFee = reactive({
 const handleGetShippingFee = async () => {
 
     if (bookBuyNow.value) {
-        formGetShippingFee.weight = Math.ceil(bookBuyNow.value.weight * bookSelect.value.quantity);
+        formGetShippingFee.weight = Math.ceil(bookBuyNow.value.weight * (bookSelect.value?.quantity ?? 1));
         formGetShippingFee.length = Math.ceil(bookBuyNow.value.dimension_length);
         formGetShippingFee.width = Math.ceil(bookBuyNow.value.dimension_width);
         formGetShippingFee.height = Math.ceil(bookBuyNow.value.height);
     }
 
-    console.log(formGetShippingFee);
+    if (!defaultAddress.value) {
+        message.error('Vui lòng chọn địa chỉ nhận hàng');
+        return;
+    }
 
+    if (bookSelect.value.quantity >= 10) {
+        totalShippingFee.value = 0;
+        return;
+    }
+
+    console.log('tính ship');
+    
 
     await $fetch('/api/GHN/shipping_fee', {
         method: 'POST',
@@ -236,7 +274,6 @@ const handleGetShippingFee = async () => {
         }
     })
 }
-
 
 const formCreateOrder = reactive({
     quantity: bookSelect?.value?.quantity,
@@ -271,21 +308,21 @@ watch(() => bookBuyNow.value, () => {
     if (defaultAddress.value) {
         handleGetShippingFee();
     }
-    if(bookBuyNow.value){
-        formCreateOrder.items = [
-            {
-                book_id: bookSelect?.value?.book_id,
-                quantity: bookSelect?.value?.quantity,
-                price: bookBuyNow?.value?.price,
-                discount: bookBuyNow.value.discount,
-            }
-        ]
-    }
+    // if (bookBuyNow.value) {
+    //     formCreateOrder.items = [
+    //         {
+    //             book_id: bookSelect?.value?.book_id,
+    //             quantity: bookSelect?.value?.quantity,
+    //             price: bookBuyNow?.value?.price,
+    //             discount: bookBuyNow.value.discount,
+    //         }
+    //     ]
+    // }
 }, { immediate: true });
 
 // kiểm tra số lượng sách mua không vượt quá số lượng sách còn lại
 const handleCheckQuantity = () => {
-    if(bookSelect.value.quantity > (bookBuyNow.value?.quantity ?? 0)){
+    if (bookSelect.value?.quantity > (bookBuyNow.value?.quantity ?? 0)) {
         message.error('Số lượng sách mua không được vượt quá số lượng sách còn lại');
         return false;
     }
@@ -294,7 +331,14 @@ const handleCheckQuantity = () => {
 
 const handlePurchase = async () => {
     formCreateOrder.shipping_address = defaultAddress.value ?? undefined;
-
+    formCreateOrder.items = [
+        {
+            book_id: bookSelect?.value?.book_id,
+            quantity: bookSelect?.value?.quantity,
+            price: bookBuyNow?.value?.price,
+            discount: bookBuyNow.value?.discount,
+        }
+    ]
     // if (!handleCheckQuantity()) {
     //     return;
     // }
@@ -323,6 +367,50 @@ const handlePurchase = async () => {
     })
 }
 
+const isApplyDiscountTiers = ref(false);
+
+const discountTiersColumns = [
+    {
+        title: 'Số lượng',
+        dataIndex: 'minimum_quantity',
+        key: 'minimum_quantity',
+
+    },
+    {
+        title: 'Giá bán (VNĐ)/sách',
+        dataIndex: 'price',
+        key: 'price',
+    }
+]
+
+const discountTiers = computed(() => bookBuyNow.value?.discount_tiers?.sort((a: any, b: any) => a.minimum_quantity - b.minimum_quantity));
+
+const priceShow = computed(() => {
+    if (bookBuyNow.value) {
+        if (user.value?.role?.name == 'company' && bookBuyNow.value.discount_tiers && bookBuyNow.value.discount_tiers.length > 0) {
+            const discount_tiers = bookBuyNow.value?.discount_tiers ? JSON.parse(JSON.stringify(bookBuyNow.value.discount_tiers)).sort((a: any, b: any) => b.minimum_quantity - a.minimum_quantity) : [];
+            if (discount_tiers && discount_tiers.length > 0) {
+                const discount_tier = discount_tiers.find((tier: any) => Number(bookSelect.value.quantity) >= Number(tier.minimum_quantity));
+                if (discount_tier) {
+                    isApplyDiscountTiers.value = true;
+                    return discount_tier.price;
+                }
+                isApplyDiscountTiers.value = false;
+            }
+            return bookBuyNow.value.discount ? bookBuyNow.value.price * (1 - bookBuyNow.value.discount / 100) : bookBuyNow.value.price;
+        }
+        isApplyDiscountTiers.value = false;
+        return bookBuyNow.value.discount ? bookBuyNow.value.price * (1 - bookBuyNow.value.discount / 100) : bookBuyNow.value.price;
+    }
+    return 0;
+});
+
+watch(bookSelect, async (newValue, oldValue) => {
+    await handleGetShippingFee();
+},
+    {
+        deep: true
+    });
 </script>
 
 <style scoped></style>
