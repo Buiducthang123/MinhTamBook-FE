@@ -5,7 +5,8 @@
             <div>
                 <a-radio-group v-model:value="orderQuery.filter.status" button-style="solid">
                     <a-radio-button value="0">Tất cả</a-radio-button>
-                    <a-radio-button v-for="(item, key) in OrderStatusText" :key="key" :value="Number.parseInt(key.toString())">
+                    <a-radio-button v-for="(item, key) in OrderStatusText" :key="key"
+                        :value="Number.parseInt(key.toString())">
                         {{ item }}
                     </a-radio-button>
                 </a-radio-group>
@@ -17,7 +18,8 @@
                     <div class="space-y-4">
                         <div class="flex justify-between w-full">
                             <div class="text-lg font-semibold">Mã đơn hàng: {{ order.id }}</div>
-                            <a-tag class="text-lg font-medium">{{ EPaymentMethodText[order.payment_method as EPaymentMethod] }}</a-tag>
+                            <a-tag class="text-lg font-medium">{{ EPaymentMethodText[order.payment_method as
+                                EPaymentMethod] }}</a-tag>
                             <span class="text-lg font-semibold uppercase text-red-500">
                                 {{ OrderStatusText[order.status as OrderStatus] }}
                             </span>
@@ -30,7 +32,8 @@
                                     <img :src="item.book?.cover_image" alt="" class="w-20 h-20 object-cover">
                                     <div class="space-y-2">
                                         <div class="text-lg font-semibold">{{ item.book?.title }}
-                                            <a class="text-blue-600 text-xs" target="_blank" :href="'/book/'+item.book?.slug">Xem chi tiết sản phẩm</a>
+                                            <a class="text-blue-600 text-xs" target="_blank"
+                                                :href="'/book/' + item.book?.slug">Xem chi tiết sản phẩm</a>
 
                                         </div>
                                         <div class="text-base font-semibold">Số lượng mua: {{ item.quantity }}</div>
@@ -39,19 +42,32 @@
                                             {{ item.book?.authors?.map(author =>
                                                 author.name).join(', ') }}</div>
                                         <div class="text-base font-semibold">Tổng tiền:
-                                            <span class="text-red-500"> {{ formatCurrency((item.price * (100 - item.discount )/100)* item.quantity) }}</span>
+                                            <span class="text-red-500"> {{ formatCurrency((item.price * (100 -
+                                                item.discount )/100)* item.quantity) }}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="flex items-start gap-4">
                                     <div class="flex items-center gap-2">
                                         <del class="text-gray-500">{{ formatCurrency(item.book?.price) }}</del>
-                                      
-                                        <div class="text-lg font-semibold text-red-500">{{ formatCurrency(item.price * (100 - item.discount)/100) }}</div>
+
+                                        <div class="text-lg font-semibold text-red-500">{{ formatCurrency(item.price *
+                                            (100 - item.discount)/100) }}</div>
                                     </div>
                                 </div>
                             </div>
+                            <div v-if="order.status === OrderStatus.DELIVERED" class="mt-5 text-end">
+                                <a-button v-if="!checkBookInReviews(order,item.book_id)" danger @click="() => {
+                                    bookId = item.book_id;
+                                    orderId = order.id;
+                                    isOpenModalReview = true;
+                                }">Đánh giá ngay</a-button>
 
+                                <div v-else class="text-red-500">
+                                    <a-button disabled danger>Cảm ơn bạn đã đánh giá sản phẩm</a-button>
+                                </div>
+
+                            </div>
                             <hr class="my-4">
 
                         </div>
@@ -63,12 +79,10 @@
                                 <!--Địa chỉ-->
                                 <div>
                                     <div class="text-base font-semibold">Địa chỉ nhận hàng: </div>
-                                    <div class="text-sm font-semibold">Tên người nhận: <span
-                                            class="text-gray-600">{{
-                                                order.shipping_address?.receiver_name }}</span></div>
-                                    <div class="text-sm font-semibold">Số điện thoại: <span
-                                            class="text-gray-600">{{
-                                                order.shipping_address?.receiver_phone_number }}</span></div>
+                                    <div class="text-sm font-semibold">Tên người nhận: <span class="text-gray-600">{{
+                                        order.shipping_address?.receiver_name }}</span></div>
+                                    <div class="text-sm font-semibold">Số điện thoại: <span class="text-gray-600">{{
+                                        order.shipping_address?.receiver_phone_number }}</span></div>
                                     <div class="text-sm font-semibold">Địa chỉ: <span class="text-gray-600">{{
                                         order.shipping_address?.specific_address }}</span>, <span
                                             class="text-gray-600">{{
@@ -87,7 +101,8 @@
                                 <div>
                                     <div class=" font-semibold">Tiền hàng: <span class="text-red-500">{{
                                         formatCurrency(order.order_items?.reduce
-                                            ((total, item) => total + (item.price * (100 - item.discount) /100 ) * item.quantity, 0)) }} 
+                                            ((total, item) => total + (item.price * (100 - item.discount) / 100) *
+                                            item.quantity, 0)) }}
                                         </span>
                                     </div>
                                 </div>
@@ -97,7 +112,21 @@
                                     formatCurrency(order.final_amount) }}</span></div>
                             </div>
                         </div>
+                        <div v-if="order.status === OrderStatus.PENDING" class="flex justify-start mt-10">
+                            <a-popconfirm
+                                title="Bạn có chắc chắn muốn hủy đơn hàng này không? Nếu bạn đã thanh toán số tiền sẽ được hoàn trả lại !"
+                                ok-text="Có" cancel-text="Không"
+                                @confirm="handleCancelOrder(order.id, OrderStatus.REQUEST_CANCEL)">
+                                <a-button type="primary" danger>Yêu cầu hủy đơn hàng</a-button>
+                            </a-popconfirm>
+                        </div>
 
+                        <div v-if="order.status === OrderStatus.REQUEST_CANCEL" class="flex justify-start mt-10">
+                            <a-popconfirm title="Bạn tiếp tục muốn mua lại đơn hàng?" ok-text="Có" cancel-text="Không"
+                                @confirm="handleCancelOrder(order.id, OrderStatus.PENDING)">
+                                <a-button type="primary" danger>HỦy bỏ yêu cầu hủy</a-button>
+                            </a-popconfirm>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -105,16 +134,27 @@
                 <a-empty description="Không có đơn hàng nào "></a-empty>
             </div>
         </section>
+        <ReviewCreateModal v-if="isOpenModalReview" :open="isOpenModalReview" @close="handleClose" :book_id="bookId" :order_id="orderId" />
     </div>
 </template>
 
 <script setup lang="ts">
 import dayjs from '#build/dayjs.imports.mjs';
+import ReviewCreateModal from '~/components/ReviewCreateModal.vue';
 import { OrderStatus, OrderStatusText } from '~/enums/orderStatus.enum';
 import { EPaymentMethodText, type EPaymentMethod } from '~/enums/payment-method.enum';
 import type { IOder } from '~/interfaces/order';
 import type { IResponsePagination } from '~/interfaces/response';
 
+const isOpenModalReview = ref(false);
+
+const bookId = ref(0);
+
+const orderId = ref(0);
+
+const handleClose = () => {
+    isOpenModalReview.value = false;
+};
 
 const authStore = useAuthStore();
 
@@ -126,10 +166,10 @@ const orderQuery = reactive({
     filter: {
         status: OrderStatus.PENDING
     },
-    'with[]': ['orderItems', 'orderItems.book']
+    'with[]': ['orderItems', 'orderItems.book','reviews']
 });
 
-const { data: orderData } = await useFetch<IResponsePagination<IOder>>('/my-orders', {
+const { data: orderData, refresh: refreshOrder } = await useFetch<IResponsePagination<IOder>>('/my-orders', {
     method: 'GET',
     query: orderQuery,
     headers: {
@@ -138,6 +178,38 @@ const { data: orderData } = await useFetch<IResponsePagination<IOder>>('/my-orde
     baseURL: useRuntimeConfig().public.apiBaseUrl
 });
 
+const handleCancelOrder = async (orderId: number, status: number) => {
+    await $fetch(`/order/${orderId}/cancel`, {
+        method: 'post',
+        headers: {
+            Authorization: `Bearer ${accessToken.value}`
+        },
+        body: {
+            status: status
+        },
+        baseURL: useRuntimeConfig().public.apiBaseUrl,
+        onResponse: ({ response }) => {
+            if (response.ok) {
+                message.success('Yêu cầu hủy đơn hàng thành công');
+                refreshOrder();
+            }
+            else {
+                message.error(response._data.message || 'Yêu cầu hủy đơn hàng thất bại');
+            }
+        }
+    });
+
+};
+//Kiểm tra idid book có trong danh sách review order không
+const checkBookInReviews = (order: IOder, book_id:number) => {
+    let check = false;
+    order.reviews?.forEach(review => {
+        if(review.book_id === book_id){
+            check = true;
+        }
+    });
+    return check;
+}
 
 </script>
 

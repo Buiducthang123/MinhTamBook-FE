@@ -646,7 +646,7 @@
   optionalDependencies:
     ipx "^2.1.0"
 
-"@nuxt/kit@^3.13.1", "@nuxt/kit@^3.13.2", "@nuxt/kit@^3.14.159", "@nuxt/kit@^3.7.4", "@nuxt/kit@^3.9.0", "@nuxt/kit@3.14.159":
+"@nuxt/kit@^3.12.2", "@nuxt/kit@^3.13.1", "@nuxt/kit@^3.13.2", "@nuxt/kit@^3.14.159", "@nuxt/kit@^3.7.4", "@nuxt/kit@^3.9.0", "@nuxt/kit@3.14.159":
   version "3.14.159"
   resolved "https://registry.npmjs.org/@nuxt/kit/-/kit-3.14.159.tgz"
   integrity sha512-ZqxsCI1NKV/gjfEUUZjMcr82sg0MKYZOuyB6bu9QY5Zr7NGpfIZY/z5Z822AKTmFxKGChnuz9M0UaS4ze6p42g==
@@ -3919,6 +3919,14 @@ nuxi@^3.15.0:
   resolved "https://registry.npmjs.org/nuxi/-/nuxi-3.15.0.tgz"
   integrity sha512-ZVu45nuDrdb7nzKW2kLGY/N1vvFYLLbUVX6gUYw4BApKGGu4+GktTR5o48dGVgMYX9A8chaugl7TL9ZYmwC9Mg==
 
+nuxt-rating@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.npmjs.org/nuxt-rating/-/nuxt-rating-0.1.5.tgz"
+  integrity sha512-43vdn5RqPt6BXHuEYnRWWFDP17PGAFBubTwCCaCxPn92u0kLC22l5UpkDyH5Pqlsey9COFDYLXzbAb/+7axiuA==
+  dependencies:
+    "@nuxt/kit" "^3.12.2"
+    typescript "^5.5.4"
+
 nuxt@^3.0.0, nuxt@^3.13.2:
   version "3.14.159"
   resolved "https://registry.npmjs.org/nuxt/-/nuxt-3.14.159.tgz"
@@ -5434,7 +5442,7 @@ type-is@^1.6.16:
     media-typer "0.3.0"
     mime-types "~2.1.24"
 
-typescript@*, typescript@^5.x, typescript@>=4.4.4:
+typescript@*, typescript@^5.5.4, typescript@^5.x, typescript@>=4.4.4:
   version "5.6.3"
   resolved "https://registry.npmjs.org/typescript/-/typescript-5.6.3.tgz"
   integrity sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==

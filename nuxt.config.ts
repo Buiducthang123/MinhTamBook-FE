@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
   modules: ['@nuxt/icon', '@nuxtjs/tailwindcss', // "@pinia/nuxt",
-  '@ant-design-vue/nuxt', '@nuxt/image', 'dayjs-nuxt', '@pinia/nuxt'],
+  '@ant-design-vue/nuxt', '@nuxt/image', 'dayjs-nuxt', '@pinia/nuxt', 'nuxt-rating' ],
   tailwindcss: {
     cssPath: ['~/assets/css/tailwind.css', { injectPosition: "first" }],
     configPath: 'tailwind.config',

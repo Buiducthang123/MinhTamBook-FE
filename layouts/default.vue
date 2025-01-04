@@ -11,12 +11,15 @@
                 <h4 class="text-base mt-2 font-medium text-[#003ea1]">Tốt & Nhanh</h4>
             </div>
             <div class="w-[60%]">
-                <a-input-search v-model:value="search" placeholder="Basic usage" size="large">
+                <a-input-search v-model:value="search" placeholder="Tìm kiếm sách" size="large">
                     <template #prefix>
                         <Icon class="text-xl" name="tabler:search" />
                     </template>
                     <template #enterButton>
-                        <a-button>Tìm kiếm</a-button>
+                        <a-button @click="()=>{
+                            handleUpdateSearch(search)
+                            router.push({ path: '/search', query: { q: search } })
+                        }">Tìm kiếm</a-button>
                     </template>
                 </a-input-search>
             </div>
@@ -114,7 +117,7 @@
 import type { MenuProps } from 'ant-design-vue';
 import type { IShippingAddress } from '~/interfaces/shipping_address';
 
-const search = ref<string>('');
+const search = ref('');
 
 const authModal = useAuthModal();
 
@@ -145,6 +148,11 @@ onMounted(() => {
     if (access_token.value) {
         cartStore.getMyCart(access_token.value);
     }
+    const searchStore = useSearchStore();
+    const { handleUpdateSearch } = searchStore;
+    if(!useRoute().path.startsWith('/search')){
+        handleUpdateSearch('');
+    }
 });
 
 const handleLogout = async(isLogoutAll:boolean) => {
@@ -171,6 +179,12 @@ const handleLogout = async(isLogoutAll:boolean) => {
         
     })
 };
+
+const searchStore = useSearchStore()
+
+const { handleUpdateSearch } = searchStore;
+
+const router = useRouter();
 
 </script>
 

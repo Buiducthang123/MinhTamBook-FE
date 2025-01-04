@@ -74,7 +74,7 @@
                                     </a-radio-group>
                                 </div>
 
-                                <div class="bg-white mt-4 p-10">
+                                <div class="bg-white mt-4 p-10" v-if="user?.role?.name=='company'">
                                     <a-table class="w-2/3 mx-auto" :columns="discountTiersColumns"
                                         :dataSource="discountTiers" bordered :pagination="false" size="large">
                                         <template #title>

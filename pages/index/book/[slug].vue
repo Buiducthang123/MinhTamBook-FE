@@ -73,7 +73,7 @@
                 </div>
             </div>
 
-            <div class="w-full col-span-12 m-10">
+            <div class="w-full col-span-12 m-10" v-if="user?.role?.name=='company'">
                 <a-table class="w-2/3 mx-auto" :columns="discountTiersColumns" :dataSource="discountTiers" bordered
                     :pagination="false" size="large">
                     <template #title>

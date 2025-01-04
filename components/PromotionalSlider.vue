@@ -1,7 +1,6 @@
 <template>
-
-    <a-carousel arrows :slides-to-show="promotionData?.data?.length ? Math.min(promotionData.data.length, 2) : 0"
-        class="carousel mb-6" dots-class="slick-dots">
+    <a-carousel v-if="promotionData?.data && promotionData?.data.length>0" arrows :slides-to-show="promotionData?.data?.length ? Math.min(promotionData.data.length, 2) : 0"
+        class="carousel mb-10" dots-class="slick-dots">
         <template #prevArrow>
             <div class="custom-slick-arrow" style="left: 10px; z-index: 1">
                 <left-circle-outlined />
@@ -12,6 +11,7 @@
                 <right-circle-outlined />
             </div>
         </template>
+        {{  }}
         <div v-for="promotion in promotionData?.data" :key="promotion.id">
             <div class="rounded-lg overflow-hidden mr-6 bg-white flex gap-6 cursor-pointer p-4" @click="redirectToPromotion(promotion)">
                 <div class="w-1/3 min-w-[200px] my-auto h-full">

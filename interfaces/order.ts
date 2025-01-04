@@ -1,4 +1,5 @@
 import type { IOrderItem } from "./orderItem";
+import type { IReview } from "./review";
 import type { IShippingAddress } from "./shipping_address";
 import type { IUser } from "./user";
 
@@ -18,6 +19,7 @@ export interface IOder{
     ref_id: string | null | number;
     note: string | null;
     order_items?: IOrderItem[];
+    reviews?: IReview[];
     created_at?: Date;
     updated_at?: Date;
 }
