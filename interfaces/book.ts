@@ -37,5 +37,7 @@ export interface IBook {
     authors?: IAuthor[];
     publisher?: IPublisher;
     category?: ICategory;
+    rating: number;
+    total_review: number;
     discount_tiers?: IDiscountTier[];
 }

@@ -29,7 +29,7 @@
       <div class="mt-3">
         <span class="block">Đánh giá:</span>
         <div class="flex items-center">
-          <span v-for="star in 5" :key="star" class="text-xl">
+          <span v-for="star in props.book.rating" :key="star" class="text-xl">
             <Icon name="i-material-symbols-star" v-if="star <= 5" class="text-yellow-500" />
             <Icon name="i-material-symbols-star-outline" v-else class="text-gray-400" />
           </span>

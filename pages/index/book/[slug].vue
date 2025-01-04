@@ -16,7 +16,7 @@
             </ol>
         </nav>
 
-        <div class="p-4 bg-white grid grid-cols-12 gap-x-10">
+        <div class="p-4 bg-white grid grid-cols-12 gap-x-10" v-if="book">
             <div class="col-span-5">
                 <a-carousel arrows dots-class="slick-dots slick-thumb">
                     <template #customPaging="{ i }">
@@ -34,15 +34,15 @@
                 <h6 class="text-xl font-bold">{{ book?.title }}</h6>
                 <div class="flex gap-3 mt-3">
                     <div class="flex">
-                        <ins class="text-base font-medium mr-2">4.8</ins>
+                        <ins class="text-base font-medium mr-2">{{ book.rating }}</ins>
                         <span v-for="star in 5" :key="star" class="text-xl">
-                            <Icon name="i-material-symbols-star" v-if="star <= 4.8" class="text-yellow-500" />
+                            <Icon name="i-material-symbols-star" v-if="star <= book.rating" class="text-yellow-500" />
                             <Icon name="i-material-symbols-star-outline" v-else class="text-gray-400" />
                         </span>
                     </div>
                     <span>|</span>
                     <div class="flex items-center">
-                        <ins class="text-base font-medium mr-2">5000</ins>
+                        <ins class="text-base font-medium mr-2">{{ book.total_review }}</ins>
                         <span> Đánh giá</span>
                     </div>
                 </div>
@@ -73,7 +73,7 @@
                 </div>
             </div>
 
-            <div class="w-full col-span-12 m-10" v-if="user?.role?.name=='company'">
+            <div class="w-full col-span-12 m-10" v-if="user?.role?.name == 'company'">
                 <a-table class="w-2/3 mx-auto" :columns="discountTiersColumns" :dataSource="discountTiers" bordered
                     :pagination="false" size="large">
                     <template #title>
@@ -149,11 +149,61 @@
                     <div class="p-4 bg-white mt-4">
                         <div class="flex gap-4 items-center">
                             <div class="flex">
-                                <ins class="text-base font-medium mr-2">4.8</ins>
+                                <ins class="text-base font-medium mr-2">{{ book?.rating }}</ins>
                                 <span v-for="star in 5" :key="star" class="text-xl">
-                                    <Icon name="i-material-symbols-star" v-if="star <= 4.8" class="text-yellow-500" />
+                                    <Icon name="i-material-symbols-star" v-if="star <= (book?.rating ?? 5)"
+                                        class="text-yellow-500" />
                                     <Icon name="i-material-symbols-star-outline" v-else class="text-gray-400" />
                                 </span>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <h6 class="mb-6 text-xl">Đánh giá: </h6>
+
+                            <div v-if="reviewsInBook?.data && reviewsInBook.data.length > 0">
+                                <div v-for="(review) in reviewsInBook?.data" :key="review.id"
+                                    class="flex gap-4 items-start my-4 shadow-lg p-4">
+                                    <div>
+                                        <NuxtImg v-if="review.user?.avatar" :src="review.user?.avatar"
+                                            class="w-12 rounded-full aspect-square object-cover" />
+                                        <NuxtImg v-else src="https://joeschmoe.io/api/v1/random" alt="Han Solo"
+                                            class="w-12 rounded-lg aspect-square" />
+                                    </div>
+                                    <div>
+                                        <a class="text-base">{{ review.user?.full_name }}</a>
+                                        <div class="flex gap-2 items-center">
+                                            <span v-for="star in 5" :key="star" class="text-xl">
+                                                <Icon name="i-material-symbols-star" v-if="star <= review.rating"
+                                                    class="text-yellow-500" />
+                                                <Icon name="i-material-symbols-star-outline" v-else
+                                                    class="text-gray-400" />
+                                            </span>
+                                        </div>
+
+                                        <p v-if="review.comment">
+                                            {{ review.comment }}
+                                        </p>
+                                        <p v-else>
+                                            Đánh giá không có nội dung
+                                        </p>
+
+                                        <div>
+                                            <a-tooltip :title="dayjs(review.created_at).format('YYYY-MM-DD HH:mm:ss')">
+                                                <span>{{ dayjs(review.created_at).fromNow() }}</span>
+                                            </a-tooltip>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="mt-6 text-end">
+                                    <a-pagination :total="reviewsInBook?.total" :current="reviewsInBook?.current_page"
+                                        :pageSize="reviewsInBook?.per_page" @change="reviewQuery.page = $event" />
+                                </div>
+                            </div>
+
+                            <div v-else>
+                                <a-empty description="Chưa có đánh giá nào" />
                             </div>
                         </div>
                     </div>
@@ -164,25 +214,27 @@
 </template>
 
 <script setup lang="ts">
+import dayjs from '#build/dayjs.imports.mjs';
 import { ref, reactive, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import type { IBook } from '~/interfaces/book';
 import type { ICategory } from '~/interfaces/category';
 import type { IResponsePagination } from '~/interfaces/response';
+import type { IReview } from '~/interfaces/review';
 
 
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 const route = useRoute();
 const query = reactive({
-    'with[]': ['category', 'authors', 'publisher', 'category.parent']
+    'with[]': ['category', 'authors', 'publisher', 'category.parent', 'reviews']
 });
 
-if(user.value?.role?.name == 'company') {
+if (user.value?.role?.name == 'company') {
     query['with[]'].push('discountTiers');
 }
 
-const { data: book } = await useFetch<IBook>(`/books/` + route.params.slug.toString(), {
+const { data: book } = await useFetch<IBook>(`/books/` + route.params.slug?.toString(), {
     method: 'get',
     baseURL: useRuntimeConfig().public.apiBaseUrl,
     query,
@@ -209,12 +261,26 @@ const booksInCategoryQuery = reactive({
     paginate: 4
 });
 
-const { data: booksInCategory } = await useFetch<IResponsePagination<IBook>>('/book-by-category/' + book.value?.category_id.toString(), {
+const { data: booksInCategory } = await useFetch<IResponsePagination<IBook>>('/book-by-category/' + book.value?.category_id?.toString(), {
     method: 'GET',
     baseURL: useRuntimeConfig().public.apiBaseUrl,
     query: booksInCategoryQuery,
     lazy: true,
     immediate: !!(book.value && book.value.category_id)
+});
+
+//get review and rating
+
+const reviewQuery = reactive({
+    paginate: 5,
+    page: 1,
+    'with[]': ['user']
+});
+
+const { data: reviewsInBook } = await useFetch<IResponsePagination<IReview>>('/reviews/book/' + book.value?.id, {
+    method: 'GET',
+    baseURL: useRuntimeConfig().public.apiBaseUrl,
+    query: reviewQuery,
 });
 
 const buildBreadcrumbs = (category: ICategory | any) => {
