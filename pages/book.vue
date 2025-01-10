@@ -1,5 +1,5 @@
 <template>
-    <NuxtLayout name="home">
+    <NuxtLayout name="default">
         <NuxtPage />
     </NuxtLayout>
 </template>
@@ -8,4 +8,6 @@
 
 </script>
 
-<style scoped></style>
+<style scoped>
+
+</style>

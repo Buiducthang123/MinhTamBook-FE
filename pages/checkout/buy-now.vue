@@ -74,7 +74,7 @@
                                     </a-radio-group>
                                 </div>
 
-                                <div class="bg-white mt-4 p-10" v-if="user?.role?.name=='company'">
+                                <div class="bg-white mt-4 p-10" v-if="user?.role?.name == 'company'">
                                     <a-table class="w-2/3 mx-auto" :columns="discountTiersColumns"
                                         :dataSource="discountTiers" bordered :pagination="false" size="large">
                                         <template #title>
@@ -151,7 +151,7 @@
                                         <span>{{
                                             isApplyDiscountTiers ? formatCurrency(0) : formatCurrency(bookBuyNow.price *
                                                 bookBuyNow.discount / 100)
-                                            }}</span>
+                                        }}</span>
                                     </div>
 
                                     <!--Ghi chú-->
@@ -261,9 +261,6 @@ const handleGetShippingFee = async () => {
         return;
     }
 
-    console.log('tính ship');
-    
-
     await $fetch('/api/GHN/shipping_fee', {
         method: 'POST',
         body: formGetShippingFee,
@@ -308,16 +305,6 @@ watch(() => bookBuyNow.value, () => {
     if (defaultAddress.value) {
         handleGetShippingFee();
     }
-    // if (bookBuyNow.value) {
-    //     formCreateOrder.items = [
-    //         {
-    //             book_id: bookSelect?.value?.book_id,
-    //             quantity: bookSelect?.value?.quantity,
-    //             price: bookBuyNow?.value?.price,
-    //             discount: bookBuyNow.value.discount,
-    //         }
-    //     ]
-    // }
 }, { immediate: true });
 
 // kiểm tra số lượng sách mua không vượt quá số lượng sách còn lại
@@ -339,9 +326,9 @@ const handlePurchase = async () => {
             discount: bookBuyNow.value?.discount,
         }
     ]
-    // if (!handleCheckQuantity()) {
-    //     return;
-    // }
+    if (!handleCheckQuantity()) {
+        return;
+    }
 
     await $fetch('/orders', {
         method: 'POST',
@@ -411,6 +398,17 @@ watch(bookSelect, async (newValue, oldValue) => {
     {
         deep: true
     });
+
+useHead({
+    title: 'Mua hàng ngay',
+    meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { hid: 'description', name: 'description', content: 'This is my amazing site, let me tell you all about it.' },
+    ],
+    link: [{ rel: 'icon', type: 'image/x-icon', href: '/images/icon-logo.png' }],
+});
+
 </script>
 
 <style scoped></style>

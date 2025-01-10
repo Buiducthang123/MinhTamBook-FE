@@ -35,29 +35,9 @@ const categoryStore = useCategoryStore();
 
 const categories = computed(() => categoryStore.categories);
 
-const { getCategory } = useCategoryStore();
-
 const currentCategory = computed(() => {
     return categories.value?.find(cate => cate.slug === route.params.slug || cate.id.toString() === route.params.slug);
 });
-
-// level tăng dần từ 0 nếu level 0 là cấp cha cao nhất
-// các level sau là cấp con with = ['children', 'children.children'] và parent nếu có
-// const withQuery = computed(() => {
-//     let arr = ['children','books'];
-//     if (currentCategory.value) {
-//         for (let i = currentCategory.value?.level ?? 0; i > 0; i--) {
-//             if (i > 0) {
-//                 let parent = 'parent.'.repeat(i);
-//                 if (parent.endsWith('.')) {
-//                     parent = parent.slice(0, -1);
-//                 }
-//                 arr.push(parent);
-//             }
-//         }
-//     }
-//     return arr;
-// });
 
 watch(() => route.params.slug, () => {
     if (currentCategory.value) {
@@ -97,6 +77,17 @@ const { data: books } = await useFetch<IResponsePagination<IBook>>('/book-by-cat
     },
     query: bookQuery
 });
+
+useHead({
+  title: '' + currentCategory.value?.name,
+  meta: [
+    { charset: 'utf-8' },
+    { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+    { hid: 'description', name: 'description', content: 'This is my amazing site, let me tell you all about it.' },
+  ],
+  link: [{ rel: 'icon', type: 'image/x-icon', href: '/images/icon-logo.png' }],
+});
+
 </script>
 
 <style scoped></style>

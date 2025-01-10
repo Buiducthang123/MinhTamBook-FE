@@ -29,4 +29,5 @@ const route = useRoute();
 const status = route.query.status
 </script>
 
-<style scoped></style>
+<style scoped>
+</style>

@@ -222,7 +222,6 @@ import type { ICategory } from '~/interfaces/category';
 import type { IResponsePagination } from '~/interfaces/response';
 import type { IReview } from '~/interfaces/review';
 
-
 const authStore = useAuthStore();
 const user = computed(() => authStore.user);
 const route = useRoute();
@@ -371,6 +370,18 @@ const priceShow = computed(() => {
     }
     return 0;
 });
+
+useHead({
+    title: book.value?.title +'',
+    meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { hid: 'description', name: 'description', content: 'This is my amazing site, let me tell you all about it.' },
+    ],
+    link: [{ rel: 'icon', type: 'image/x-icon', href: '/images/icon-logo.png' }],
+});
+
+
 </script>
 
 <style scoped>

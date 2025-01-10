@@ -26,10 +26,10 @@
           {{ formatCurrency(props.book.price * (1 - props.book.discount / 100)) }}
         </span>
       </div>
-      <div class="mt-3">
-        <span class="block">Đánh giá:</span>
+      <div class="mt-2 flex items-center gap-2">
+        <span class="">Đánh giá:</span>
         <div class="flex items-center">
-          <span v-for="star in props.book.rating" :key="star" class="text-xl">
+          <span v-for="star in props.book.rating" :key="star" class="text-xl flex items-center">
             <Icon name="i-material-symbols-star" v-if="star <= 5" class="text-yellow-500" />
             <Icon name="i-material-symbols-star-outline" v-else class="text-gray-400" />
           </span>
@@ -39,7 +39,7 @@
         {{ props.book.discount_tiers && props.book.discount_tiers.length > 0 ? 'Sản phẩm có áp dụng chiết khấu' : '' }}
       </div>
 
-      <div class="mt-3">
+      <div class="mt-1">
         <span class="block">Danh mục:</span>
         <span class="text-sm text-gray-500">{{ props.book.category?.name }}</span>
       </div>

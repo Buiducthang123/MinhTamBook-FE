@@ -1,7 +1,6 @@
 <template>
     <div class="min-h-screen">
         <h6 class="text-xl font-medium py-4">Giỏ hàng</h6>
-
         <div class="flex gap-4">
             <div class="w-3/4">
                 <a-table :columns="columns" bordered :data-source="sortItemSelect ?? []" :row-key="record => record.id"
