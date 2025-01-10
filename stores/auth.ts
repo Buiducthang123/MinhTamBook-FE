@@ -1,14 +1,14 @@
 import type { IUser } from "~/interfaces/user"
 
 export const useAuthStore = defineStore('auth',()=>{
-  const user = ref<IUser>()
+  const user = ref<IUser | null>(null)
   const accessToken = useCookie<string|null>('access_token',{
       default: () => null,
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // Giải thích: 1000ms * 60s * 60m * 24h * 7d = 1 tuần,
       watch: true
   })
 
-  const setUser = (newUser: IUser|undefined) => {
+  const setUser = (newUser: IUser|null) => {
     user.value = newUser
   }
 
@@ -32,7 +32,7 @@ export const useAuthStore = defineStore('auth',()=>{
         }
         else{
           setAccessToken(null)
-          setUser(undefined)
+          setUser(null)
           navigateTo('/login')
       }}
     })

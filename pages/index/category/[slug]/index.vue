@@ -1,7 +1,5 @@
 <template>
-
     <section class="">
-
         <section>
             <PromotionalSlider />
         </section>

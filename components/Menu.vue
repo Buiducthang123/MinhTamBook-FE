@@ -49,40 +49,6 @@
       </a-collapse>
     </div>
   </div>
-
-  <!-- chuong trình khuyến mãi -->
-
-  <!--
-  
-    <div class="mt-6 mb-6">
-      <a-card hoverable style="width: 100%" class="overflow-hidden ">
-        <template #cover>
-          <div class="relative overflow-hidden">
-            <div class="w-full h-60 bg-cover relative 
-                          bg-[url('https://salt.tikicdn.com/ts/tka/1c/a1/00/3574c4dce736eb3ef0f4f371f358660e.png')] 
-                          blur-lg bg-center bg-no-repeat">
-            </div>
-            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <img width="100%" class="mx-auto rounded-lg overflow-hidden " alt="example"
-                src="https://salt.tikicdn.com/ts/tka/1c/a1/00/3574c4dce736eb3ef0f4f371f358660e.png" />
-            </div>
-          </div>
-  
-        </template>
-        <a-card-meta>
-          <template #title>
-            <h6 class="text-wrap text-center text-base">Top sách bán chạy</h6>
-          </template>
-          <template #description>
-            <div class="mt-10 text-center">
-              <p class="text-primary text-center font-medium">Giảm 5%</p>
-              <a-button type="primary" class="mt-4 ">Xem thêm</a-button>
-            </div>
-          </template>
-        </a-card-meta>
-      </a-card>
-    </div>
-  -->
 </template>
 
 <script setup lang="ts">

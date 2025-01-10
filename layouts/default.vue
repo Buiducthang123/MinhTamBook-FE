@@ -88,7 +88,7 @@
             <ul class="flex">
                 <li class="flex items-center gap-2 px-4 border-r-2 cursor-pointer">
                     <img width="20px" src="~/assets/images/header-g-2.png" />
-                    <span class="text-sm font-medium">Freeship mọi đơn</span>
+                    <span class="text-sm font-medium">Freeship với 10 đơn hàng</span>
                 </li>
                 <li class="flex items-center gap-2 px-4 border-r-2 cursor-pointer">
                     <img width="20px" src="~/assets/images/header-g-1.png" />
