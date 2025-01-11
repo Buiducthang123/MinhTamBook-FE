@@ -1,11 +1,11 @@
 <template>
-    <a-breadcrumb class="pt-4 mb-6 text-base cursor-pointer">
+    <a-breadcrumb class="px-4 mb-2 text-base cursor-pointer flex py-2">
         <template #separator><span style="color: red">></span></template>
         <a-breadcrumb-item :href="currentPage?.path">Trang chủ</a-breadcrumb-item>
         <a-breadcrumb-item >{{ currentPage?.title }}</a-breadcrumb-item>
     </a-breadcrumb>
-    <div class="grid grid-cols-12 pb-4">
-        <div class="col-span-2">
+    <div class="grid grid-cols-12 pb-4 bg-white p-4">
+        <div class="col-span-2 ">
             <div class="flex gap-4 items-center">
                 <NuxtImg v-if="user?.avatar" :src="user?.avatar" class="w-10 h-10 rounded-full" />
                 <a-avatar v-else size="large" class="bg-blue-600">{{ user?.full_name.charAt(0)}}</a-avatar>
@@ -27,7 +27,9 @@
             </ul>
         </div>
         <div class="col-span-9 pl-10">
-            <slot></slot>
+            <div class="border-l border-gray-200 pl-4 min-h-[60vh]">
+                <slot></slot>
+            </div>
         </div>
     </div>
 </template>

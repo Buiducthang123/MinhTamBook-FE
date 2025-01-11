@@ -304,6 +304,10 @@ const { getMyCart } = cartStore;
 //add to cart
 const access_token = computed(() => useAuthStore().accessToken);
 const handleAddToCart = async () => {
+    if (!user.value) {
+        message.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
+        return;
+    }
     const data = {
         book_id: book.value?.id,
         quantity: quantity.value
@@ -332,6 +336,12 @@ const handleAddToCart = async () => {
 // handle buy now set local storage item and quantity after that navigate to cart page
 
 const handleBuyNow = async () => {
+    
+    if(!user.value){
+        message.error('Vui lòng đăng nhập để mua hàng');
+        return;
+    }
+
     const data = {
         book_id: book.value?.id,
         quantity: quantity.value

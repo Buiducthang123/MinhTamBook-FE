@@ -103,9 +103,9 @@
         </div>
         <hr class="mt-3">
 
-        <div class="bg-[#F5F5FA]">
+        <div class="bg-[#F5F5FA] pb-20">
             <div class="md:max-w-[90vw] 2xl:max-w-screen-2xl mx-auto">
-                <slot></slot>
+                <slot class=""></slot>
             </div>
         </div>
     </div>

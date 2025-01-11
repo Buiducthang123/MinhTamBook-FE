@@ -1,6 +1,6 @@
 <template>
     <div class="bg-white p-4">
-        <h6 class="font-medium text-xl">Sản phẩm</h6>
+        <h6 class="font-medium text-xl">Bộ lọc</h6>
         <div class="py-6">
             <div class="flex gap-6 items-center">
                 <div>

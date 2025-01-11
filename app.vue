@@ -10,6 +10,7 @@ onMounted(async () => {
   const authStore = useAuthStore();
   const { setUser } = authStore;
   const accessToken = useCookie('access_token');
+  loading.value = false;
 
   if (accessToken) {
     await $fetch('user-me', {
@@ -27,7 +28,6 @@ onMounted(async () => {
       },
     });
   }
-  loading.value = false;
 });
 
 </script>

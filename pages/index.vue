@@ -11,18 +11,21 @@
           <ExploreCategory />
         </section>
 
-        <section class="mt-10">
+        <section class="">
           <Filter :filter="bookQuery" />
         </section>
         <hr>
 
-        <section class=" bg-white p-6 mt-4">
+        <section v-if="books?.data && books.data.length>0" class=" bg-white p-6 mt-4">
           <div class="grid grid-cols-12 gap-x-4 gap-y-8">
             <BookCard v-for="book in books?.data" :key="book.id" :book="book" class="col-span-3" />
           </div>
           <div class="mt-10 text-end">
             <a-pagination v-model:current="bookQuery.page" :total="books?.total" show-less-items />
           </div>
+        </section>
+        <section v-else class="bg-white p-6 mt-4">
+            <a-result status="404" title="Chưa có sản phẩm nào trong danh mục" />
         </section>
       </section>
     </NuxtLayout>
