@@ -91,7 +91,7 @@
                                 <div class="space-y-4">
                                     <div class="flex justify-between p-4 bg-white">
                                         <h6 class="">Giao hàng tới: </h6>
-                                        <span class="cursor-pointer text-blue-500 font-medium">Thay đổi</span>
+                                        <span class="cursor-pointer text-blue-500 font-medium" @click="navigateTo('/customer/address')">Thay đổi</span>
                                     </div>
                                     <div class="border p-4 bg-white" v-if="defaultAddress">
                                         <p class="font-medium">{{ defaultAddress?.receiver_name }}</p>

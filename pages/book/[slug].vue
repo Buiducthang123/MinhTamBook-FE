@@ -67,7 +67,7 @@
                 </div>
 
                 <div class="mt-6 flex gap-4">
-                    <a-button type="primary" class="rounded-0" size="large" @click="handleBuyNow">Mua ngay</a-button>
+                    <a-button :disabled="book.quantity!=null && book?.quantity<=0" type="primary" class="rounded-0" size="large" @click="handleBuyNow">Mua ngay</a-button>
                     <a-button size="large" class="rounded-0" @click="handleAddToCart">Thêm sản phẩm vào giỏ
                         hàng</a-button>
                 </div>
@@ -96,12 +96,12 @@
         <!--Sản phẩm tương tự-->
 
         <div class="bg-white mt-6 p-10">
-            <div v-if="booksInCategory?.data && booksInCategory.data.length > 0" class="flex justify-between">
+            <div v-if="bookSimilar && bookSimilar.length > 0" class="flex justify-between">
                 <h6 class="text-xl font-medium mb-6">Các sản phẩm tương tự</h6>
                 <span class="text-red-500 cursor-pointer">Tất cả sản phẩm ></span>
             </div>
             <div class="grid grid-cols-12 gap-4">
-                <BookCard v-for="book in booksInCategory?.data" :key="book.id" :book="book" class="col-span-3" />
+                <BookCard v-for="book in bookSimilar" :key="book.id" :book="book" class="col-span-3" />
             </div>
         </div>
 
@@ -241,6 +241,11 @@ const { data: book } = await useFetch<IBook>(`/books/` + route.params.slug?.toSt
 
 const discountTiers = computed(() => book.value?.discount_tiers?.sort((a, b) => a.minimum_quantity - b.minimum_quantity))
 
+//san pham tuong tu
+const bookSimilar = computed(() => {
+    return booksInCategory.value?.data.filter((item: IBook) => item.id !== book.value?.id);
+});
+
 // số lượng sách muốn mua
 const quantity = ref(1);
 
@@ -265,7 +270,7 @@ const { data: booksInCategory } = await useFetch<IResponsePagination<IBook>>('/b
     baseURL: useRuntimeConfig().public.apiBaseUrl,
     query: booksInCategoryQuery,
     lazy: true,
-    immediate: !!(book.value && book.value.category_id)
+    immediate: !!(book.value && book.value.category_id) 
 });
 
 //get review and rating
@@ -341,6 +346,8 @@ const handleBuyNow = async () => {
         message.error('Vui lòng đăng nhập để mua hàng');
         return;
     }
+
+
 
     const data = {
         book_id: book.value?.id,
